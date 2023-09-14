@@ -1,0 +1,43 @@
+{
+  "name": "@astrojs/deno",
+  "description": "Deploy your site to a Deno server",
+  "version": "5.0.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "author": "withastro",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/withastro/astro.git",
+    "directory": "packages/integrations/deno"
+  },
+  "keywords": [
+    "withastro",
+    "astro-adapter"
+  ],
+  "bugs": "https://github.com/withastro/astro/issues",
+  "homepage": "https://docs.astro.build/en/guides/integrations-guide/deno/",
+  "exports": {
+    ".": "./dist/index.js",
+    "./server.js": "./dist/server.js",
+    "./__deno_imports.js": "./dist/__deno_imports.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/"
+  },
+  "dependencies": {
+    "esbuild": "^0.19.2"
+  },
+  "peerDependencies": {
+    "astro": "^3.0.13"
+  },
+  "devDependencies": {
+    "astro": "^3.0.13",
+    "typescript": "^5.2.2"
+  }
+}
