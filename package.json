@@ -18,16 +18,15 @@
   "bugs": "https://github.com/withastro/astro/issues",
   "homepage": "https://docs.astro.build/en/guides/integrations-guide/deno/",
   "exports": {
-    ".": "./dist/index.js",
-    "./server.js": "./dist/server.js",
-    "./__deno_imports.js": "./dist/__deno_imports.js",
+    ".": "./src/index.ts",
+    "./server.ts": "./src/server.ts",
+    "./__deno_imports.ts": "./src/__deno_imports.ts",
     "./package.json": "./package.json"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
     "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/"
   },
   "dependencies": {

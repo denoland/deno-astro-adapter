@@ -68,7 +68,7 @@ const COMPATIBLE_NODE_MODULES = [
 // We shim deno-specific imports so we can run the code in Node
 // to prerender pages. In the final Deno build, this import is
 // replaced with the Deno-specific contents listed below.
-const DENO_IMPORTS_SHIM = `@astrojs/deno/__deno_imports.js`;
+const DENO_IMPORTS_SHIM = `@astrojs/deno/__deno_imports.ts`;
 const DENO_IMPORTS = `export { Server } from "https://deno.land/std@${DENO_VERSION}/http/server.ts"
 export { serveFile } from 'https://deno.land/std@${DENO_VERSION}/http/file_server.ts';
 export { fromFileUrl } from "https://deno.land/std@${DENO_VERSION}/path/mod.ts";`;
@@ -76,7 +76,7 @@ export { fromFileUrl } from "https://deno.land/std@${DENO_VERSION}/path/mod.ts";
 export function getAdapter(args?: Options): AstroAdapter {
 	return {
 		name: '@astrojs/deno',
-		serverEntrypoint: '@astrojs/deno/server.js',
+		serverEntrypoint: '@astrojs/deno/server.ts',
 		args: args ?? {},
 		exports: ['stop', 'handle', 'start', 'running'],
 		supportedAstroFeatures: {
@@ -95,10 +95,10 @@ export function getAdapter(args?: Options): AstroAdapter {
 const denoImportsShimPlugin = {
 	name: '@astrojs/deno:shim',
 	setup(build: esbuild.PluginBuild) {
-		build.onLoad({ filter: /__deno_imports\.js$/ }, async () => {
+		build.onLoad({ filter: /__deno_imports\.ts$/ }, async () => {
 			return {
 				contents: DENO_IMPORTS,
-				loader: 'js',
+				loader: 'ts',
 			};
 		});
 	},
@@ -149,9 +149,6 @@ export default function createIntegration(args?: Options): AstroIntegration {
 							(vite.resolve.alias as Record<string, string>)[alias.find] = alias.replacement;
 						}
 					}
-					vite.ssr = {
-						noExternal: COMPATIBLE_NODE_MODULES,
-					};
 
 					if (Array.isArray(vite.build.rollupOptions.external)) {
 						vite.build.rollupOptions.external.push(DENO_IMPORTS_SHIM);
