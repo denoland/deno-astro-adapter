@@ -16,7 +16,7 @@ declare type ExitCallback = () => void;
 
 export async function runBuild(fixturePath: string) {
 	const proc = Deno.run({
-		cmd: ['node', '../../../../../astro/astro.js', 'build', '--silent'],
+		cmd: ['node_modules/.bin/astro', 'build', '--silent'],
 		cwd: fromFileUrl(new URL(fixturePath, dir)),
 	});
 	try {
