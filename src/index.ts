@@ -1,4 +1,5 @@
 import type { AstroAdapter, AstroIntegration } from 'astro';
+import { passthroughImageService } from 'astro/config';
 import esbuild from 'esbuild';
 import * as fs from 'node:fs';
 import * as npath from 'node:path';
@@ -118,6 +119,21 @@ export default function createIntegration(args?: Options): AstroIntegration {
 	return {
 		name: '@astrojs/deno',
 		hooks: {
+			'astro:config:setup': ({ config, updateConfig, logger }) => {
+				let imageConfigOverwrite = false;
+				if (
+					config.image.service.entrypoint === 'astro/assets/services/sharp' ||
+					config.image.service.entrypoint === 'astro/assets/services/squoosh'
+				) {
+					logger.warn(
+						`Does not support image optimization. To allow your project to build with the original, unoptimized images, the image service has been automatically switched to the 'noop' option. See https://docs.astro.build/en/reference/configuration-reference/#imageservice`
+					);
+					imageConfigOverwrite = true;
+				}
+				updateConfig({
+					image: imageConfigOverwrite ? passthroughImageService() : config.image,
+				});
+			},
 			'astro:config:done': ({ setAdapter, config }) => {
 				setAdapter(getAdapter(args));
 				_buildConfig = config.build;
