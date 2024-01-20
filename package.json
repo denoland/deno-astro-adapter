@@ -34,10 +34,11 @@
     "esbuild": "^0.19.2"
   },
   "peerDependencies": {
-    "astro": "^3.0.13"
+    "astro": "^4.2.1"
   },
   "devDependencies": {
-    "astro": "^3.0.13",
-    "typescript": "^5.2.2"
+    "@types/node": "^20.11.5",
+    "astro": "^4.2.1",
+    "typescript": "^5.3.3"
   }
 }
