@@ -20,6 +20,10 @@ async function* getPrerenderedFiles(clientRoot: URL): AsyncGenerator<URL> {
 	}
 }
 
+function removeTrailingForwardSlash(path: string) {
+	return path.endsWith('/') ? path.slice(0, path.length - 1) : path;
+}
+
 export function start(manifest: SSRManifest, options: Options) {
 	if (options.start === false) {
 		return;
@@ -52,7 +56,7 @@ export function start(manifest: SSRManifest, options: Options) {
 			let fallback;
 			for await (const file of getPrerenderedFiles(clientRoot)) {
 				const pathname = file.pathname.replace(/\/(index)?\.html$/, '');
-				if (localPath.pathname.endsWith(pathname)) {
+				if (removeTrailingForwardSlash(localPath.pathname).endsWith(pathname)) {
 					fallback = file;
 					break;
 				}
