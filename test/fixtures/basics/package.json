@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "astro": "^3",
+    "astro": "^4",
     "@deno/astro-adapter": "workspace:*",
     "@astrojs/react": "^3",
     "@astrojs/mdx": "^1",
