@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import deno from '@astrojs/deno';
+import deno from '@deno/astro-adapter';
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 

@@ -1,3 +1,10 @@
+# @deno/astro-adapter
+
+## 0.1.0
+
+- Renamed to @deno/astro-adapter [deno-astro-adapter/pull/15](https://github.com/denoland/deno-astro-adapter/pull/15)
+
+
 # @astrojs/deno
 
 ## 5.0.0

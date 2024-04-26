@@ -68,15 +68,15 @@ const COMPATIBLE_NODE_MODULES = [
 // We shim deno-specific imports so we can run the code in Node
 // to prerender pages. In the final Deno build, this import is
 // replaced with the Deno-specific contents listed below.
-const DENO_IMPORTS_SHIM = `@astrojs/deno/__deno_imports.ts`;
+const DENO_IMPORTS_SHIM = `@deno/astro-adapter/__deno_imports.ts`;
 const DENO_IMPORTS = `export { Server } from "https://deno.land/std@${DENO_VERSION}/http/server.ts"
 export { serveFile } from 'https://deno.land/std@${DENO_VERSION}/http/file_server.ts';
 export { fromFileUrl } from "https://deno.land/std@${DENO_VERSION}/path/mod.ts";`;
 
 export function getAdapter(args?: Options): AstroAdapter {
 	return {
-		name: '@astrojs/deno',
-		serverEntrypoint: '@astrojs/deno/server.ts',
+		name: '@deno/astro-adapter',
+		serverEntrypoint: '@deno/astro-adapter/server.ts',
 		args: args ?? {},
 		exports: ['stop', 'handle', 'start', 'running'],
 		supportedAstroFeatures: {
@@ -93,7 +93,7 @@ export function getAdapter(args?: Options): AstroAdapter {
 }
 
 const denoImportsShimPlugin = {
-	name: '@astrojs/deno:shim',
+	name: '@deno/astro-adapter:shim',
 	setup(build: esbuild.PluginBuild) {
 		build.onLoad({ filter: /__deno_imports\.ts$/ }, async () => {
 			return {
@@ -116,7 +116,7 @@ export default function createIntegration(args?: Options): AstroIntegration {
 	let _buildConfig: BuildConfig;
 	let _vite: any;
 	return {
-		name: '@astrojs/deno',
+		name: '@deno/astro-adapter',
 		hooks: {
 			'astro:config:done': ({ setAdapter, config }) => {
 				setAdapter(getAdapter(args));
@@ -124,10 +124,10 @@ export default function createIntegration(args?: Options): AstroIntegration {
 
 				if (config.output === 'static') {
 					console.warn(
-						`[@astrojs/deno] \`output: "server"\` or \`output: "hybrid"\` is required to use this adapter.`
+						`[@deno/astro-adapter] \`output: "server"\` or \`output: "hybrid"\` is required to use this adapter.`
 					);
 					console.warn(
-						`[@astrojs/deno] Otherwise, this adapter is not required to deploy a static site to Deno.`
+						`[@deno/astro-adapter] Otherwise, this adapter is not required to deploy a static site to Deno.`
 					);
 				}
 			},

@@ -4,6 +4,6 @@
   "private": true,
   "dependencies": {
     "astro": "^3",
-    "@astrojs/deno": "workspace:*"
+    "@deno/astro-adapter": "workspace:*"
   }
 }
