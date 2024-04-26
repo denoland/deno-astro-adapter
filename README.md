@@ -1,4 +1,4 @@
-# @astrojs/deno 🦖
+# @deno/astro-adapter
 
 This adapter allows Astro to deploy your SSR site to Deno targets.
 
@@ -19,11 +19,14 @@ If you're using Astro as a static site builder—its behavior out of the box—y
 
 If you wish to [use server-side rendering (SSR)](https://docs.astro.build/en/guides/server-side-rendering/), Astro requires an adapter that matches your deployment runtime.
 
-[Deno](https://deno.land/) is a runtime similar to Node, but with an API that's more similar to the browser's API. This adapter provides access to Deno's API and creates a script to run your project on a Deno server.
+[Deno](https://deno.com/) is a runtime similar to Node, but with an API that's more similar to the browser's API. This adapter provides access to Deno's API and creates a script to run your project on a Deno server.
 
 ## Installation
 
 Add the Deno adapter to enable SSR in your Astro project with the following `astro add` command. This will install the adapter and make the appropriate changes to your `astro.config.mjs` file in one step.
+
+
+<!-- TODO(kt3k): Update `astro add deno` in the upstream -->
 
 ```sh
 # Using NPM
@@ -39,7 +42,7 @@ If you prefer to install the adapter manually instead, complete the following tw
 1. Install the Deno adapter to your project’s dependencies using your preferred package manager. If you’re using npm or aren’t sure, run this in the terminal:
 
    ```bash
-     npm install @astrojs/deno
+     npm install @deno/astro-adapter
    ```
 
 1. Update your `astro.config.mjs` project configuration file with the changes below.
@@ -47,7 +50,7 @@ If you prefer to install the adapter manually instead, complete the following tw
    ```js ins={3,6-7}
    // astro.config.mjs
    import { defineConfig } from 'astro/config';
-   import deno from '@astrojs/deno';
+   import deno from '@deno/astro-adapter';
 
    export default defineConfig({
      output: 'server',
@@ -99,7 +102,7 @@ To configure this adapter, pass an object to the `deno()` function call in `astr
 ```js
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
-import deno from '@astrojs/deno';
+import deno from '@deno/astro-adapter';
 
 export default defineConfig({
   output: 'server',
@@ -115,7 +118,7 @@ This adapter automatically starts a server when it is imported. You can turn thi
 
 ```js
 import { defineConfig } from 'astro/config';
-import deno from '@astrojs/deno';
+import deno from '@deno/astro-adapter';
 
 export default defineConfig({
   output: 'server',
@@ -128,10 +131,9 @@ export default defineConfig({
 If you disable this, you need to write your own Deno web server. Import and call `handle` from the generated entry script to render requests:
 
 ```ts
-import { serve } from 'https://deno.land/std@0.167.0/http/server.ts';
 import { handle } from './dist/server/entry.mjs';
 
-serve((req: Request) => {
+Deno.serve((req: Request) => {
   // Check the request, maybe do static file handling here.
 
   return handle(req);
@@ -144,7 +146,7 @@ You can set the port (default: `8085`) and hostname (default: `0.0.0.0`) for the
 
 ```js
 import { defineConfig } from 'astro/config';
-import deno from '@astrojs/deno';
+import deno from '@deno/astro-adapter';
 
 export default defineConfig({
   output: 'server',
