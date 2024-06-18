@@ -25,6 +25,12 @@ If you wish to [use server-side rendering (SSR)](https://docs.astro.build/en/gui
 
 Add the Deno adapter to enable SSR in your Astro project with the following steps:
 
+1. Update or create `.npmrc` in your project with:
+
+   ```text
+   @jsr:registry=https://npm.jsr.io
+   ```
+
 1. Install the Deno adapter to your project’s dependencies using your preferred package manager. If you’re using npm or aren’t sure, run this in the terminal:
 
    ```bash
