@@ -4,6 +4,7 @@ import * as fs from 'node:fs';
 import * as npath from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { BuildConfig, Options } from './types';
+import { mergeObjects } from './helpers';
 
 const SHIM = `globalThis.process = {
 	argv: [],
@@ -108,7 +109,10 @@ const denoRenameNodeModulesPlugin = {
 	name: '@astrojs/esbuild-rename-node-modules',
 	setup(build: esbuild.PluginBuild) {
 		const filter = new RegExp(COMPATIBLE_NODE_MODULES.map((mod) => `(^${mod}$)`).join('|'));
-		build.onResolve({ filter }, (args) => ({ path: 'node:' + args.path, external: true }));
+		build.onResolve({ filter }, (args) => ({
+			path: 'node:' + args.path,
+			external: true,
+		}));
 	},
 };
 
@@ -124,10 +128,10 @@ export default function createIntegration(args?: Options): AstroIntegration {
 
 				if (config.output === 'static') {
 					console.warn(
-						`[@deno/astro-adapter] \`output: "server"\` or \`output: "hybrid"\` is required to use this adapter.`
+						`[@deno/astro-adapter] \`output: "server"\` or \`output: "hybrid"\` is required to use this adapter.`,
 					);
 					console.warn(
-						`[@deno/astro-adapter] Otherwise, this adapter is not required to deploy a static site to Deno.`
+						`[@deno/astro-adapter] Otherwise, this adapter is not required to deploy a static site to Deno.`,
 					);
 				}
 			},
@@ -140,7 +144,12 @@ export default function createIntegration(args?: Options): AstroIntegration {
 					vite.build.rollupOptions = vite.build.rollupOptions ?? {};
 					vite.build.rollupOptions.external = vite.build.rollupOptions.external ?? [];
 
-					const aliases = [{ find: 'react-dom/server', replacement: 'react-dom/server.browser' }];
+					const aliases = [
+						{
+							find: 'react-dom/server',
+							replacement: 'react-dom/server.browser',
+						},
+					];
 
 					if (Array.isArray(vite.resolve.alias)) {
 						vite.resolve.alias = [...vite.resolve.alias, ...aliases];
@@ -164,26 +173,30 @@ export default function createIntegration(args?: Options): AstroIntegration {
 				const entryUrl = new URL(_buildConfig.serverEntry, _buildConfig.server);
 				const pth = fileURLToPath(entryUrl);
 
-				await esbuild.build({
-					target: 'esnext',
-					platform: 'browser',
-					entryPoints: [pth],
-					outfile: pth,
-					allowOverwrite: true,
-					format: 'esm',
-					bundle: true,
-					external: [
-						...COMPATIBLE_NODE_MODULES.map((mod) => `node:${mod}`),
-						'@astrojs/markdown-remark',
-					],
-					plugins: [denoImportsShimPlugin, denoRenameNodeModulesPlugin],
-					banner: {
-						js: SHIM,
+				const esbuildConfig = mergeObjects<esbuild.BuildOptions>(
+					{
+						target: 'esnext',
+						platform: 'browser',
+						entryPoints: [pth],
+						outfile: pth,
+						allowOverwrite: true,
+						format: 'esm',
+						bundle: true,
+						external: [
+							...COMPATIBLE_NODE_MODULES.map((mod) => `node:${mod}`),
+							'@astrojs/markdown-remark',
+						],
+						plugins: [denoImportsShimPlugin, denoRenameNodeModulesPlugin],
+						banner: {
+							js: SHIM,
+						},
+						logOverride: {
+							'ignored-bare-import': 'silent',
+						},
 					},
-					logOverride: {
-						'ignored-bare-import': 'silent'
-					},
-				});
+					args?.esbuild || {},
+				);
+				await esbuild.build(esbuildConfig);
 
 				// Remove chunks, if they exist. Since we have bundled via esbuild these chunks are trash.
 				try {
@@ -191,7 +204,10 @@ export default function createIntegration(args?: Options): AstroIntegration {
 						_vite?.build?.rollupOptions?.output?.chunkFileNames ?? `chunks/chunk.[hash].mjs`;
 					const chunkPath = npath.dirname(chunkFileNames);
 					const chunksDirUrl = new URL(chunkPath + '/', _buildConfig.server);
-					await fs.promises.rm(chunksDirUrl, { recursive: true, force: true });
+					await fs.promises.rm(chunksDirUrl, {
+						recursive: true,
+						force: true,
+					});
 				} catch {}
 			},
 		},

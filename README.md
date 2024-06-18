@@ -138,7 +138,25 @@ export default defineConfig({
   output: 'server',
   adapter: deno({
     port: 8081,
-    hostname: 'myhost',
+    hostname: "myhost",
+  }),
+});
+```
+
+### esbuild options
+
+You can customize esbuild options by passing an object to the `esbuild` option. This object is passed directly to esbuild's `build` function. See the [esbuild documentation](https://esbuild.github.io/api/#build) for more information.
+
+```js
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
+
+export default defineConfig({
+  output: "server",
+  adapter: deno({
+    esbuild: {
+      // options go here
+    },
   }),
 });
 ```
