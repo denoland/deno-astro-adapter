@@ -1,7 +1,5 @@
-import React from 'react';
+import React from "react";
 
-export default function() {
-	return (
-		<div id="react">testing</div>
-	);
+export default function () {
+  return <div id="react">testing</div>;
 }

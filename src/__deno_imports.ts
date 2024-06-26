@@ -3,7 +3,7 @@
 //
 // This allows us to prerender pages in Node.
 export class Server {
-	listenAndServe() {}
+  listenAndServe() {}
 }
 
 export function serveFile() {}
