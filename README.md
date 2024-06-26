@@ -2,36 +2,46 @@
 
 This adapter allows Astro to deploy your SSR site to Deno targets.
 
-Learn how to deploy your Astro site in our [Deno Deploy deployment guide](https://docs.astro.build/en/guides/deploy/deno/).
+Learn how to deploy your Astro site in our
+[Deno Deploy deployment guide](https://docs.astro.build/en/guides/deploy/deno/).
 
-- <strong>[Why Astro Deno](#why-astro-deno)</strong>
-- <strong>[Installation](#installation)</strong>
-- <strong>[Usage](#usage)</strong>
-- <strong>[Configuration](#configuration)</strong>
-- <strong>[Examples](#examples)</strong>
-- <strong>[Troubleshooting](#troubleshooting)</strong>
-- <strong>[Contributing](#contributing)</strong>
-- <strong>[Changelog](#changelog)</strong>
+- <strong> [Why Astro Deno](#why-astro-deno)</strong>
+- <strong> [Installation](#installation)</strong>
+- <strong> [Usage](#usage)</strong>
+- <strong> [Configuration](#configuration)</strong>
+- <strong> [Examples](#examples)</strong>
+- <strong> [Troubleshooting](#troubleshooting)</strong>
+- <strong> [Contributing](#contributing)</strong>
+- <strong> [Changelog](#changelog)</strong>
 
 ## Why Astro Deno
 
-If you're using Astro as a static site builder—its behavior out of the box—you don't need an adapter.
+If you're using Astro as a static site builder—its behavior out of the box—you
+don't need an adapter.
 
-If you wish to [use server-side rendering (SSR)](https://docs.astro.build/en/guides/server-side-rendering/), Astro requires an adapter that matches your deployment runtime.
+If you wish to
+[use server-side rendering (SSR)](https://docs.astro.build/en/guides/server-side-rendering/),
+Astro requires an adapter that matches your deployment runtime.
 
-[Deno](https://deno.com/) is a runtime similar to Node, but with an API that's more similar to the browser's API. This adapter provides access to Deno's API and creates a script to run your project on a Deno server.
+[Deno](https://deno.com/) is a runtime similar to Node, but with an API that's
+more similar to the browser's API. This adapter provides access to Deno's API
+and creates a script to run your project on a Deno server.
 
 ## Installation
 
-Add the Deno adapter to enable SSR in your Astro project with the following steps:
+Add the Deno adapter to enable SSR in your Astro project with the following
+steps:
 
-1. Install the Deno adapter to your project’s dependencies using your preferred package manager. If you’re using npm or aren’t sure, run this in the terminal:
+1. Install the Deno adapter to your project’s dependencies using your preferred
+   package manager. If you’re using npm or aren’t sure, run this in the
+   terminal:
 
    ```bash
-     npm install @deno/astro-adapter
+   npm install @deno/astro-adapter
    ```
 
-1. Update your `astro.config.mjs` project configuration file with the changes below.
+1. Update your `astro.config.mjs` project configuration file with the changes
+   below.
 
    ```js ins={3,6-7}
    // astro.config.mjs
@@ -59,7 +69,8 @@ Next, update your `preview` script in `package.json` to run `deno`:
 }
 ```
 
-You can now use this command to preview your production Astro site locally with Deno.
+You can now use this command to preview your production Astro site locally with
+Deno.
 
 ```bash
 npm run preview
@@ -67,13 +78,17 @@ npm run preview
 
 ## Usage
 
-After [performing a build](https://docs.astro.build/en/guides/deploy/#building-your-site-locally) there will be a `dist/server/entry.mjs` module. You can start a server by importing this module in your Deno app:
+After
+[performing a build](https://docs.astro.build/en/guides/deploy/#building-your-site-locally)
+there will be a `dist/server/entry.mjs` module. You can start a server by
+importing this module in your Deno app:
 
 ```js
 import "./dist/server/entry.mjs";
 ```
 
-See the `start` option below for how you can have more control over starting the Astro server.
+See the `start` option below for how you can have more control over starting the
+Astro server.
 
 You can also run the script directly using deno:
 
@@ -83,7 +98,8 @@ deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs
 
 ## Configuration
 
-To configure this adapter, pass an object to the `deno()` function call in `astro.config.mjs`.
+To configure this adapter, pass an object to the `deno()` function call in
+`astro.config.mjs`.
 
 ```js
 // astro.config.mjs
@@ -100,7 +116,8 @@ export default defineConfig({
 
 ### start
 
-This adapter automatically starts a server when it is imported. You can turn this off with the `start` option:
+This adapter automatically starts a server when it is imported. You can turn
+this off with the `start` option:
 
 ```js
 import { defineConfig } from "astro/config";
@@ -114,7 +131,8 @@ export default defineConfig({
 });
 ```
 
-If you disable this, you need to write your own Deno web server. Import and call `handle` from the generated entry script to render requests:
+If you disable this, you need to write your own Deno web server. Import and call
+`handle` from the generated entry script to render requests:
 
 ```ts
 import { handle } from "./dist/server/entry.mjs";
@@ -128,7 +146,9 @@ Deno.serve((req: Request) => {
 
 ### port and hostname
 
-You can set the port (default: `8085`) and hostname (default: `0.0.0.0`) for the deno server to use. If `start` is false, this has no effect; your own server must configure the port and hostname.
+You can set the port (default: `8085`) and hostname (default: `0.0.0.0`) for the
+deno server to use. If `start` is false, this has no effect; your own server
+must configure the port and hostname.
 
 ```js
 import { defineConfig } from "astro/config";
@@ -145,7 +165,10 @@ export default defineConfig({
 
 ### esbuild options
 
-You can customize esbuild options by passing an object to the `esbuild` option. This object is passed directly to esbuild's `build` function. See the [esbuild documentation](https://esbuild.github.io/api/#build) for more information.
+You can customize esbuild options by passing an object to the `esbuild` option.
+This object is passed directly to esbuild's `build` function. See the
+[esbuild documentation](https://esbuild.github.io/api/#build) for more
+information.
 
 ```js
 import { defineConfig } from "astro/config";
@@ -163,17 +186,23 @@ export default defineConfig({
 
 ## Examples
 
-The [Astro Deno](https://github.com/withastro/astro/tree/main/examples/deno) example includes a `preview` command that runs the entry script directly. Run `npm run build` then `npm run preview` to run the production deno server.
+The [Astro Deno](https://github.com/withastro/astro/tree/main/examples/deno)
+example includes a `preview` command that runs the entry script directly. Run
+`npm run build` then `npm run preview` to run the production deno server.
 
 ## Troubleshooting
 
-For help, check out the `#support` channel on [Discord](https://astro.build/chat). Our friendly Support Squad members are here to help!
+For help, check out the `#support` channel on
+[Discord](https://astro.build/chat). Our friendly Support Squad members are here
+to help!
 
-You can also check our [Astro Integration Documentation][astro-integration] for more on integrations.
+You can also check our [Astro Integration Documentation][astro-integration] for
+more on integrations.
 
 ## Contributing
 
-This package is maintained by Astro's Core team. You're welcome to submit an issue or PR!
+This package is maintained by Astro's Core team. You're welcome to submit an
+issue or PR!
 
 ## Changelog
 

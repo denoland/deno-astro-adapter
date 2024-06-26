@@ -25,7 +25,8 @@
     "src"
   ],
   "scripts": {
-    "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/"
+    "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/",
+    "fmt": "deno fmt"
   },
   "dependencies": {
     "esbuild": "^0.19.2",

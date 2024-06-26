@@ -29,6 +29,9 @@ jobs:
         uses: pnpm/action-setup@v2
         with:
           version: 8
+
+      - name: Check fmt
+        run: deno fmt --check
       
       - name: Install dependencies
         run: pnpm i
