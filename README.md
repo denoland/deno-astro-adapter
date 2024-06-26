@@ -35,11 +35,11 @@ Add the Deno adapter to enable SSR in your Astro project with the following step
 
    ```js ins={3,6-7}
    // astro.config.mjs
-   import { defineConfig } from 'astro/config';
-   import deno from '@deno/astro-adapter';
+   import { defineConfig } from "astro/config";
+   import deno from "@deno/astro-adapter";
 
    export default defineConfig({
-     output: 'server',
+     output: "server",
      adapter: deno(),
    });
    ```
@@ -70,7 +70,7 @@ npm run preview
 After [performing a build](https://docs.astro.build/en/guides/deploy/#building-your-site-locally) there will be a `dist/server/entry.mjs` module. You can start a server by importing this module in your Deno app:
 
 ```js
-import './dist/server/entry.mjs';
+import "./dist/server/entry.mjs";
 ```
 
 See the `start` option below for how you can have more control over starting the Astro server.
@@ -87,11 +87,11 @@ To configure this adapter, pass an object to the `deno()` function call in `astr
 
 ```js
 // astro.config.mjs
-import { defineConfig } from 'astro/config';
-import deno from '@deno/astro-adapter';
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
 
 export default defineConfig({
-  output: 'server',
+  output: "server",
   adapter: deno({
     //options go here
   }),
@@ -103,11 +103,11 @@ export default defineConfig({
 This adapter automatically starts a server when it is imported. You can turn this off with the `start` option:
 
 ```js
-import { defineConfig } from 'astro/config';
-import deno from '@deno/astro-adapter';
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
 
 export default defineConfig({
-  output: 'server',
+  output: "server",
   adapter: deno({
     start: false,
   }),
@@ -117,7 +117,7 @@ export default defineConfig({
 If you disable this, you need to write your own Deno web server. Import and call `handle` from the generated entry script to render requests:
 
 ```ts
-import { handle } from './dist/server/entry.mjs';
+import { handle } from "./dist/server/entry.mjs";
 
 Deno.serve((req: Request) => {
   // Check the request, maybe do static file handling here.
@@ -131,14 +131,32 @@ Deno.serve((req: Request) => {
 You can set the port (default: `8085`) and hostname (default: `0.0.0.0`) for the deno server to use. If `start` is false, this has no effect; your own server must configure the port and hostname.
 
 ```js
-import { defineConfig } from 'astro/config';
-import deno from '@deno/astro-adapter';
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
 
 export default defineConfig({
-  output: 'server',
+  output: "server",
   adapter: deno({
     port: 8081,
-    hostname: 'myhost',
+    hostname: "myhost",
+  }),
+});
+```
+
+### esbuild options
+
+You can customize esbuild options by passing an object to the `esbuild` option. This object is passed directly to esbuild's `build` function. See the [esbuild documentation](https://esbuild.github.io/api/#build) for more information.
+
+```js
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
+
+export default defineConfig({
+  output: "server",
+  adapter: deno({
+    esbuild: {
+      // options go here
+    },
   }),
 });
 ```
