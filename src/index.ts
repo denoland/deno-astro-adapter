@@ -11,7 +11,7 @@ const SHIM = `globalThis.process = {
 	env: Deno.env.toObject(),
 };`;
 
-const DENO_VERSION = `0.177.0`;
+const DENO_VERSION = `0.224.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
 const COMPATIBLE_NODE_MODULES = [
   "assert",
