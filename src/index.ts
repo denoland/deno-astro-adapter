@@ -11,7 +11,7 @@ const SHIM = `globalThis.process = {
 	env: Deno.env.toObject(),
 };`;
 
-const DENO_VERSION = `0.177.0`;
+const STD_VERSION = `0.224.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
 const COMPATIBLE_NODE_MODULES = [
   "assert",
@@ -71,9 +71,9 @@ const COMPATIBLE_NODE_MODULES = [
 // replaced with the Deno-specific contents listed below.
 const DENO_IMPORTS_SHIM = `@deno/astro-adapter/__deno_imports.ts`;
 const DENO_IMPORTS =
-  `export { Server } from "https://deno.land/std@${DENO_VERSION}/http/server.ts"
-export { serveFile } from 'https://deno.land/std@${DENO_VERSION}/http/file_server.ts';
-export { fromFileUrl } from "https://deno.land/std@${DENO_VERSION}/path/mod.ts";`;
+  `export { Server } from "jsr:@std/http@${STD_VERSION}/server";
+export { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
+export { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
 
 export function getAdapter(args?: Options): AstroAdapter {
   return {
@@ -102,6 +102,9 @@ const denoImportsShimPlugin = {
         contents: DENO_IMPORTS,
         loader: "ts",
       };
+    });
+    build.onResolve({ filter: /^jsr:@std/ }, (args) => {
+      return { path: args.path, external: true };
     });
   },
 };
