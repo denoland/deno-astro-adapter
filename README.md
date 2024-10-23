@@ -201,8 +201,8 @@ more on integrations.
 
 ## Contributing
 
-This package is maintained by Astro's Core team. You're welcome to submit an
-issue or PR!
+This package is maintained by Deno team. You're welcome to submit an issue or
+PR!
 
 ## Changelog
 
