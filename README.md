@@ -10,9 +10,7 @@ Learn how to deploy your Astro site in our
 - <strong> [Usage](#usage)</strong>
 - <strong> [Configuration](#configuration)</strong>
 - <strong> [Examples](#examples)</strong>
-- <strong> [Troubleshooting](#troubleshooting)</strong>
 - <strong> [Contributing](#contributing)</strong>
-- <strong> [Changelog](#changelog)</strong>
 
 ## Why Astro Deno
 
@@ -22,6 +20,9 @@ don't need an adapter.
 If you wish to
 [use server-side rendering (SSR)](https://docs.astro.build/en/guides/server-side-rendering/),
 Astro requires an adapter that matches your deployment runtime.
+
+You also need an adapter or server if you wish to deploy your site to
+[Deno Deploy](https://deno.com/deploy).
 
 [Deno](https://deno.com/) is a runtime similar to Node, but with an API that's
 more similar to the browser's API. This adapter provides access to Deno's API
@@ -190,22 +191,28 @@ The [Astro Deno](https://github.com/withastro/astro/tree/main/examples/deno)
 example includes a `preview` command that runs the entry script directly. Run
 `npm run build` then `npm run preview` to run the production deno server.
 
-## Troubleshooting
-
-For help, check out the `#support` channel on
-[Discord](https://astro.build/chat). Our friendly Support Squad members are here
-to help!
-
-You can also check our [Astro Integration Documentation][astro-integration] for
-more on integrations.
-
 ## Contributing
 
-This package is maintained by Astro's Core team. You're welcome to submit an
+To configure your development environment, clone the repository and install
+[`pnpm`](https://pnpm.io/). `pnpm` is a package manager that emphasizes disk
+space efficiency and is used for managing the dependencies of this project. Once
+installed, run `pnpm i` to install the dependencies.
+
+```sh
+git clone
+cd astro-adapter
+pnpm i
+```
+
+The Deno Astro Adapter is currently built and tested with Deno 1.x. To test your
+changes make sure you have Deno 1.46.3 installed
+(`eno upgrade --version 1.46.3`) and run the following command:
+
+```sh
+pnpm run test
+```
+
+Finally, you can check your code formatting with: `pnpm run fmt`.
+
+This package is maintained by Deno's Core team. You're welcome to submit an
 issue or PR!
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for a history of changes to this integration.
-
-[astro-integration]: https://docs.astro.build/en/guides/integrations-guide/
