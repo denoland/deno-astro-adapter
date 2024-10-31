@@ -25,16 +25,11 @@ jobs:
           node-version: 18
           registry-url: https://registry.npmjs.org/
 
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
       - name: Check fmt
         run: deno fmt --check
 
       - name: Install dependencies
-        run: pnpm i
+        run: deno install --allow-scripts=npm:sharp@0.33.4
 
       - name: Test
-        run: pnpm test
+        run: deno task test
