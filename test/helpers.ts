@@ -1,6 +1,5 @@
-import { fromFileUrl } from "https://deno.land/std@0.110.0/path/mod.ts";
-import { assert } from "https://deno.land/std@0.158.0/testing/asserts.ts";
-import { readableStreamFromReader } from "https://deno.land/std@0.142.0/streams/conversion.ts";
+import { fromFileUrl } from "jsr:@std/path@1.0";
+import { assert } from "jsr:@std/assert@1.0";
 
 const dir = new URL("./", import.meta.url);
 const defaultURL = new URL("http://localhost:8085/");
@@ -12,18 +11,19 @@ export const defaultTestPermissions: Deno.PermissionOptions = {
   env: true,
 };
 
-declare type ExitCallback = () => void;
+declare type ExitCallback = () => Promise<void>;
 
 export async function runBuild(fixturePath: string) {
-  const proc = Deno.run({
-    cmd: ["node_modules/.bin/astro", "build", "--silent"],
+  const command = new Deno.Command("node_modules/.bin/astro", {
+    args: ["build", "--silent"],
     cwd: fromFileUrl(new URL(fixturePath, dir)),
   });
+  const process = command.spawn();
   try {
-    const status = await proc.status();
+    const status = await process.status;
     assert(status.success);
   } finally {
-    proc.close();
+    safeKill(process);
   }
 }
 
@@ -42,22 +42,39 @@ export async function startModFromSubprocess(
   baseUrl: URL,
 ): Promise<ExitCallback> {
   const entryUrl = new URL("./dist/server/entry.mjs", baseUrl);
-  const proc = Deno.run({
-    cmd: ["deno", "run", "--allow-env", "--allow-net", fromFileUrl(entryUrl)],
+  const command = new Deno.Command("deno", {
+    args: ["run", "--allow-env", "--allow-net", fromFileUrl(entryUrl)],
     cwd: fromFileUrl(baseUrl),
     stderr: "piped",
   });
+  const process = command.spawn();
+  await waitForServer(process);
+  return async () => {
+    safeKill(process);
+    await process.status;
+  };
+}
 
-  const stderr = readableStreamFromReader(proc.stderr);
+async function waitForServer(process: Deno.ChildProcess) {
+  const reader = process.stderr.getReader();
   const dec = new TextDecoder();
-  for await (const bytes of stderr) {
-    const msg = dec.decode(bytes);
-    if (msg.includes(`Server running`)) {
+
+  while (true) {
+    const { value } = await reader.read();
+    const msg = dec.decode(value);
+    if (msg.includes("Server running")) {
       break;
     }
   }
+  reader.cancel();
+}
 
-  return () => proc.close();
+function safeKill(process: Deno.ChildProcess) {
+  try {
+    process.kill("SIGKILL");
+  } catch {
+    // ignore
+  }
 }
 
 export async function runBuildAndStartApp(fixturePath: string) {

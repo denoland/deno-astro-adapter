@@ -13,12 +13,12 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
-      
-      - name: Setup Deno 1.x
-        uses: denoland/setup-deno@v1
+
+      - name: Setup Deno 2.x
+        uses: denoland/setup-deno@v2
         with:
-          deno-version: v1.x
-            
+          deno-version: v2.x
+
       - name: Setup Node 18
         uses: actions/setup-node@v3
         with:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Check fmt
         run: deno fmt --check
-      
+
       - name: Install dependencies
         run: pnpm i
 
