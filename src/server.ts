@@ -4,11 +4,7 @@ import { App } from "astro/app";
 import type { Options } from "./types";
 
 // @ts-expect-error
-import {
-  fromFileUrl,
-  serveFile,
-  Server,
-} from "@deno/astro-adapter/__deno_imports.ts";
+import { fromFileUrl, serveFile } from "@deno/astro-adapter/__deno_imports.ts";
 
 let _server: Server | undefined = undefined;
 let _startPromise: Promise<void> | undefined = undefined;
@@ -35,10 +31,10 @@ export function start(manifest: SSRManifest, options: Options) {
 
   const clientRoot = new URL("../client/", import.meta.url);
   const app = new App(manifest);
-  const handler = async (request: Request, connInfo: any) => {
+  const handler = async (request: Request, handlerInfo: any) => {
     if (app.match(request)) {
-      let ip = connInfo?.remoteAddr?.hostname;
-      Reflect.set(request, Symbol.for("astro.clientAddress"), ip);
+      const hostname = handlerInfo.remoteAddr?.hostname;
+      Reflect.set(request, Symbol.for("astro.clientAddress"), hostname);
       const response = await app.render(request);
       if (app.setCookieHeaders) {
         for (const setCookieHeader of app.setCookieHeaders(response)) {
@@ -89,13 +85,9 @@ export function start(manifest: SSRManifest, options: Options) {
   };
 
   const port = options.port ?? 8085;
-  _server = new Server({
-    port,
-    hostname: options.hostname ?? "0.0.0.0",
-    handler,
-  });
-
-  _startPromise = Promise.resolve(_server.listenAndServe());
+  const hostname = options.hostname ?? "0.0.0.0";
+  _server = Deno.serve({ port, hostname }, handler);
+  _startPromise = _server.finished;
   console.error(`Server running on port ${port}`);
 }
 
@@ -104,7 +96,7 @@ export function createExports(manifest: SSRManifest, options: Options) {
   return {
     async stop() {
       if (_server) {
-        _server.close();
+        _server.shutdown();
         _server = undefined;
       }
       await Promise.resolve(_startPromise);
