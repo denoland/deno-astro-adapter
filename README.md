@@ -204,9 +204,8 @@ cd astro-adapter
 pnpm i
 ```
 
-The Deno Astro Adapter is currently built and tested with Deno 1.x. To test your
-changes make sure you have Deno 1.46.3 installed
-(`eno upgrade --version 1.46.3`) and run the following command:
+The Deno Astro Adapter is currently built and tested with Deno 2.x. To test your
+changes make sure you have Deno 2.x installed
 
 ```sh
 pnpm run test
