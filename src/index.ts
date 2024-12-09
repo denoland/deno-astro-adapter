@@ -130,15 +130,6 @@ export default function createIntegration(args?: Options): AstroIntegration {
       "astro:config:done": ({ setAdapter, config }) => {
         setAdapter(getAdapter(args));
         _buildConfig = config.build;
-
-        if (config.output === "static") {
-          console.warn(
-            `[@deno/astro-adapter] \`output: "server"\` or \`output: "hybrid"\` is required to use this adapter.`,
-          );
-          console.warn(
-            `[@deno/astro-adapter] Otherwise, this adapter is not required to deploy a static site to Deno.`,
-          );
-        }
       },
       "astro:build:setup": ({ vite, target }) => {
         if (target === "server") {
