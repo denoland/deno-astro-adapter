@@ -29,6 +29,7 @@ export function start(manifest: SSRManifest, options: Options) {
     return;
   }
 
+  // undefined = not yet loaded, null = not installed
   let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
 
   const clientRoot = new URL("../client/", import.meta.url);
