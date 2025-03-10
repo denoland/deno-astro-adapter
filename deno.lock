@@ -210,9 +210,10 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@opentelemetry/api@1",
         "npm:@types/lodash@^4.17.5",
         "npm:@types/node@^20.11.5",
-        "npm:astro@^5.0.1",
+        "npm:astro@^5.4.2",
         "npm:esbuild@~0.19.2",
         "npm:lodash@^4.17.21",
         "npm:typescript@^5.3.3"

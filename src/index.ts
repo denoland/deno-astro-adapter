@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import type { BuildConfig, Options } from "./types";
 import { mergeObjects } from "./helpers";
 
-const SHIM = `globalThis.process = {
+const SHIM = `globalThis.process ??= {
 	argv: [],
 	env: Deno.env.toObject(),
 };`;
@@ -30,7 +30,7 @@ const COMPATIBLE_NODE_MODULES = [
   "fs",
   "fs/promises",
   "http",
-  // 'http2',
+  "http2",
   "https",
   "inspector",
   "module",
@@ -52,15 +52,15 @@ const COMPATIBLE_NODE_MODULES = [
   "sys",
   "timers",
   "timers/promises",
-  // 'tls',
+  "tls",
   "trace_events",
   "tty",
   "url",
   "util",
   "util/types",
-  // 'v8',
-  // 'vm',
-  // 'wasi',
+  "v8",
+  "vm",
+  "wasi",
   // 'webcrypto',
   "worker_threads",
   "zlib",
@@ -71,6 +71,9 @@ const COMPATIBLE_NODE_MODULES = [
 // replaced with the Deno-specific contents listed below.
 const DENO_IMPORTS_SHIM = `@deno/astro-adapter/__deno_imports.ts`;
 const DENO_IMPORTS =
+  `import { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
+import { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
+const DENO_EXPORTS =
   `export { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
 export { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
 
@@ -84,11 +87,6 @@ export function getAdapter(args?: Options): AstroAdapter {
       hybridOutput: "stable",
       staticOutput: "stable",
       serverOutput: "stable",
-      assets: {
-        supportKind: "stable",
-        isSharpCompatible: false,
-        isSquooshCompatible: false,
-      },
     },
   };
 }
@@ -98,26 +96,13 @@ const denoImportsShimPlugin = {
   setup(build: esbuild.PluginBuild) {
     build.onLoad({ filter: /__deno_imports\.ts$/ }, async () => {
       return {
-        contents: DENO_IMPORTS,
+        contents: DENO_EXPORTS,
         loader: "ts",
       };
     });
     build.onResolve({ filter: /^jsr:@std/ }, (args) => {
       return { path: args.path, external: true };
     });
-  },
-};
-
-const denoRenameNodeModulesPlugin = {
-  name: "@astrojs/esbuild-rename-node-modules",
-  setup(build: esbuild.PluginBuild) {
-    const filter = new RegExp(
-      COMPATIBLE_NODE_MODULES.map((mod) => `(^${mod}$)`).join("|"),
-    );
-    build.onResolve({ filter }, (args) => ({
-      path: "node:" + args.path,
-      external: true,
-    }));
   },
 };
 
@@ -146,6 +131,10 @@ export default function createIntegration(args?: Options): AstroIntegration {
               find: "react-dom/server",
               replacement: "react-dom/server.browser",
             },
+            ...COMPATIBLE_NODE_MODULES.map((mod) => ({
+              find: `${mod}`,
+              replacement: `node:${mod}`,
+            })),
           ];
 
           if (Array.isArray(vite.resolve.alias)) {
@@ -168,46 +157,53 @@ export default function createIntegration(args?: Options): AstroIntegration {
         }
       },
       "astro:build:done": async () => {
-        const entryUrl = new URL(_buildConfig.serverEntry, _buildConfig.server);
-        const pth = fileURLToPath(entryUrl);
+        if (process.env.ASTRO_DENO_UNBUNDLED) {
+          // Replace `import { serveFile, fromFileUrl } from '@deno/astro-adapter/__deno_imports.ts';` in one of the chunks/ files with the actual imports.
+          const chunksDirUrl = new URL("./chunks/", _buildConfig.server);
+          for (const file of fs.readdirSync(chunksDirUrl)) {
+            if (!file.endsWith(".mjs")) continue;
+            const pth = fileURLToPath(new URL(file, chunksDirUrl));
+            const contents = fs.readFileSync(pth, "utf-8");
+            fs.writeFileSync(
+              pth,
+              contents.replace(
+                `import { serveFile, fromFileUrl } from '${DENO_IMPORTS_SHIM}';`,
+                DENO_IMPORTS,
+              ),
+            );
+          }
+        } else {
+          const entryUrl = new URL(
+            _buildConfig.serverEntry,
+            _buildConfig.server,
+          );
+          const pth = fileURLToPath(entryUrl);
 
-        const esbuildConfig = mergeObjects<esbuild.BuildOptions>(
-          {
-            target: "esnext",
-            platform: "browser",
-            entryPoints: [pth],
-            outfile: pth,
-            allowOverwrite: true,
-            format: "esm",
-            bundle: true,
-            external: [
-              ...COMPATIBLE_NODE_MODULES.map((mod) => `node:${mod}`),
-              "@astrojs/markdown-remark",
-            ],
-            plugins: [denoImportsShimPlugin, denoRenameNodeModulesPlugin],
-            banner: {
-              js: SHIM,
+          const esbuildConfig = mergeObjects<esbuild.BuildOptions>(
+            {
+              target: "esnext",
+              platform: "browser",
+              entryPoints: [pth],
+              outfile: pth,
+              allowOverwrite: true,
+              format: "esm",
+              bundle: true,
+              external: [
+                ...COMPATIBLE_NODE_MODULES.map((mod) => `node:${mod}`),
+                "@astrojs/markdown-remark",
+              ],
+              plugins: [denoImportsShimPlugin],
+              banner: {
+                js: SHIM,
+              },
+              logOverride: {
+                "ignored-bare-import": "silent",
+              },
             },
-            logOverride: {
-              "ignored-bare-import": "silent",
-            },
-          },
-          args?.esbuild || {},
-        );
-        await esbuild.build(esbuildConfig);
-
-        // Remove chunks, if they exist. Since we have bundled via esbuild these chunks are trash.
-        try {
-          const chunkFileNames =
-            _vite?.build?.rollupOptions?.output?.chunkFileNames ??
-              `chunks/chunk.[hash].mjs`;
-          const chunkPath = npath.dirname(chunkFileNames);
-          const chunksDirUrl = new URL(chunkPath + "/", _buildConfig.server);
-          await fs.promises.rm(chunksDirUrl, {
-            recursive: true,
-            force: true,
-          });
-        } catch {}
+            args?.esbuild || {},
+          );
+          await esbuild.build(esbuildConfig);
+        }
       },
     },
   };

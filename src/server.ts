@@ -32,7 +32,10 @@ export function start(manifest: SSRManifest, options: Options) {
   // undefined = not yet loaded, null = not installed
   let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
 
-  const clientRoot = new URL("../client/", import.meta.url);
+  const clientRoot = new URL(
+    import.meta.url.endsWith("entry.mjs") ? "../client/" : "../../client/",
+    import.meta.url,
+  );
   const app = new App(manifest);
   const handler = async (request: Request, handlerInfo: any) => {
     if (trace === undefined) {

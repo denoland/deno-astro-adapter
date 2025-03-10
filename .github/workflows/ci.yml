@@ -38,3 +38,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Test (unbundled)
+        run: ASTRO_DENO_UNBUNDLED=true pnpm test
