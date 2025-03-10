@@ -29,13 +29,30 @@ export function start(manifest: SSRManifest, options: Options) {
     return;
   }
 
+  // undefined = not yet loaded, null = not installed
+  let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
+
   const clientRoot = new URL("../client/", import.meta.url);
   const app = new App(manifest);
   const handler = async (request: Request, handlerInfo: any) => {
-    if (app.match(request)) {
+    if (trace === undefined) {
+      try {
+        trace = (await import("@opentelemetry/api")).trace;
+      } catch {
+        trace = null;
+        // @open-telemetry/api is not installed
+      }
+    }
+    const routeData = app.match(request);
+    if (routeData) {
+      const span = trace?.getActiveSpan();
+      span?.updateName(`${request.method} ${routeData.route}`);
+      span?.setAttribute("http.route", routeData.route);
+      span?.setAttribute("astro.prerendered", routeData.prerender);
+      span?.setAttribute("astro.type", routeData.type);
       const hostname = handlerInfo.remoteAddr?.hostname;
       Reflect.set(request, Symbol.for("astro.clientAddress"), hostname);
-      const response = await app.render(request);
+      const response = await app.render(request, { routeData });
       if (app.setCookieHeaders) {
         for (const setCookieHeader of app.setCookieHeaders(response)) {
           response.headers.append("Set-Cookie", setCookieHeader);
