@@ -2,7 +2,7 @@ import type { AstroAdapter, AstroConfig, AstroIntegration } from "astro";
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { BuildConfig, Options } from "./types";
-import { join, posix, relative } from "node:path";
+import { join, relative } from "node:path";
 
 const STD_VERSION = `1.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
