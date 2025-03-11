@@ -5,6 +5,6 @@ export default defineConfig({
   adapter: deno(),
   output: "server",
   build: {
-    client: "./client2"
-  }
+    client: "./client2",
+  },
 });
