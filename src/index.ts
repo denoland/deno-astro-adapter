@@ -1,15 +1,8 @@
-import type { AstroAdapter, AstroIntegration } from "astro";
-import esbuild from "esbuild";
+import type { AstroAdapter, AstroConfig, AstroIntegration } from "astro";
 import * as fs from "node:fs";
-import * as npath from "node:path";
 import { fileURLToPath } from "node:url";
 import type { BuildConfig, Options } from "./types";
-import { mergeObjects } from "./helpers";
-
-const SHIM = `globalThis.process ??= {
-	argv: [],
-	env: Deno.env.toObject(),
-};`;
+import { join, posix, relative } from "node:path";
 
 const STD_VERSION = `1.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
@@ -73,15 +66,22 @@ const DENO_IMPORTS_SHIM = `@deno/astro-adapter/__deno_imports.ts`;
 const DENO_IMPORTS =
   `import { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
 import { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
-const DENO_EXPORTS =
-  `export { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
-export { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
 
-export function getAdapter(args?: Options): AstroAdapter {
+export function getAdapter(
+  args: Options | undefined,
+  config: AstroConfig,
+): AstroAdapter {
+  const clientPath = join(fileURLToPath(config.build.client));
+  const serverPath = join(
+    fileURLToPath(config.build.server),
+    config.build.serverEntry,
+  );
+  const relativeClientPath = relative(serverPath, clientPath) + "/";
+  const realArgs = { ...args, relativeClientPath };
   return {
     name: "@deno/astro-adapter",
     serverEntrypoint: "@deno/astro-adapter/server.ts",
-    args: args ?? {},
+    args: realArgs,
     exports: ["stop", "handle", "start", "running"],
     supportedAstroFeatures: {
       hybridOutput: "stable",
@@ -91,34 +91,17 @@ export function getAdapter(args?: Options): AstroAdapter {
   };
 }
 
-const denoImportsShimPlugin = {
-  name: "@deno/astro-adapter:shim",
-  setup(build: esbuild.PluginBuild) {
-    build.onLoad({ filter: /__deno_imports\.ts$/ }, async () => {
-      return {
-        contents: DENO_EXPORTS,
-        loader: "ts",
-      };
-    });
-    build.onResolve({ filter: /^jsr:@std/ }, (args) => {
-      return { path: args.path, external: true };
-    });
-  },
-};
-
 export default function createIntegration(args?: Options): AstroIntegration {
   let _buildConfig: BuildConfig;
-  let _vite: any;
   return {
     name: "@deno/astro-adapter",
     hooks: {
       "astro:config:done": ({ setAdapter, config }) => {
-        setAdapter(getAdapter(args));
+        setAdapter(getAdapter(args, config));
         _buildConfig = config.build;
       },
       "astro:build:setup": ({ vite, target }) => {
         if (target === "server") {
-          _vite = vite;
           vite.resolve = vite.resolve ?? {};
           vite.resolve.alias = vite.resolve.alias ?? {};
           vite.build = vite.build ?? {};
@@ -157,52 +140,19 @@ export default function createIntegration(args?: Options): AstroIntegration {
         }
       },
       "astro:build:done": async () => {
-        if (process.env.ASTRO_DENO_UNBUNDLED) {
-          // Replace `import { serveFile, fromFileUrl } from '@deno/astro-adapter/__deno_imports.ts';` in one of the chunks/ files with the actual imports.
-          const chunksDirUrl = new URL("./chunks/", _buildConfig.server);
-          for (const file of fs.readdirSync(chunksDirUrl)) {
-            if (!file.endsWith(".mjs")) continue;
-            const pth = fileURLToPath(new URL(file, chunksDirUrl));
-            const contents = fs.readFileSync(pth, "utf-8");
-            fs.writeFileSync(
-              pth,
-              contents.replace(
-                `import { serveFile, fromFileUrl } from '${DENO_IMPORTS_SHIM}';`,
-                DENO_IMPORTS,
-              ),
-            );
-          }
-        } else {
-          const entryUrl = new URL(
-            _buildConfig.serverEntry,
-            _buildConfig.server,
+        // Replace `import { serveFile, fromFileUrl } from '@deno/astro-adapter/__deno_imports.ts';` in one of the chunks/ files with the actual imports.
+        const chunksDirUrl = new URL("./chunks/", _buildConfig.server);
+        for (const file of fs.readdirSync(chunksDirUrl)) {
+          if (!file.endsWith(".mjs")) continue;
+          const pth = fileURLToPath(new URL(file, chunksDirUrl));
+          const contents = fs.readFileSync(pth, "utf-8");
+          fs.writeFileSync(
+            pth,
+            contents.replace(
+              `import { serveFile, fromFileUrl } from '${DENO_IMPORTS_SHIM}';`,
+              DENO_IMPORTS,
+            ),
           );
-          const pth = fileURLToPath(entryUrl);
-
-          const esbuildConfig = mergeObjects<esbuild.BuildOptions>(
-            {
-              target: "esnext",
-              platform: "browser",
-              entryPoints: [pth],
-              outfile: pth,
-              allowOverwrite: true,
-              format: "esm",
-              bundle: true,
-              external: [
-                ...COMPATIBLE_NODE_MODULES.map((mod) => `node:${mod}`),
-                "@astrojs/markdown-remark",
-              ],
-              plugins: [denoImportsShimPlugin],
-              banner: {
-                js: SHIM,
-              },
-              logOverride: {
-                "ignored-bare-import": "silent",
-              },
-            },
-            args?.esbuild || {},
-          );
-          await esbuild.build(esbuildConfig);
         }
       },
     },

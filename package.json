@@ -28,10 +28,7 @@
     "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/",
     "fmt": "deno fmt"
   },
-  "dependencies": {
-    "esbuild": "^0.19.2",
-    "lodash": "^4.17.21"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@opentelemetry/api": "^1",
     "astro": "^5.0.1"
@@ -43,7 +40,6 @@
   },
   "devDependencies": {
     "@opentelemetry/api": "^1",
-    "@types/lodash": "^4.17.5",
     "@types/node": "^20.11.5",
     "astro": "^5.4.2",
     "typescript": "^5.3.3"

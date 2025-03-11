@@ -1,12 +1,12 @@
 // Normal Imports
 import type { SSRManifest } from "astro";
 import { App } from "astro/app";
-import type { Options } from "./types";
+import type { InternalOptions } from "./types";
 
 // @ts-expect-error
 import { fromFileUrl, serveFile } from "@deno/astro-adapter/__deno_imports.ts";
 
-let _server: Server | undefined = undefined;
+let _server: Deno.Server | undefined = undefined;
 let _startPromise: Promise<void> | undefined = undefined;
 
 async function* getPrerenderedFiles(clientRoot: URL): AsyncGenerator<URL> {
@@ -24,7 +24,7 @@ function removeTrailingForwardSlash(path: string) {
   return path.endsWith("/") ? path.slice(0, path.length - 1) : path;
 }
 
-export function start(manifest: SSRManifest, options: Options) {
+export function start(manifest: SSRManifest, options: InternalOptions) {
   if (options.start === false) {
     return;
   }
@@ -32,10 +32,7 @@ export function start(manifest: SSRManifest, options: Options) {
   // undefined = not yet loaded, null = not installed
   let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
 
-  const clientRoot = new URL(
-    import.meta.url.endsWith("entry.mjs") ? "../client/" : "../../client/",
-    import.meta.url,
-  );
+  const clientRoot = new URL(options.relativeClientPath, import.meta.url);
   const app = new App(manifest);
   const handler = async (request: Request, handlerInfo: any) => {
     if (trace === undefined) {
@@ -111,7 +108,7 @@ export function start(manifest: SSRManifest, options: Options) {
   console.error(`Server running on port ${port}`);
 }
 
-export function createExports(manifest: SSRManifest, options: Options) {
+export function createExports(manifest: SSRManifest, options: InternalOptions) {
   const app = new App(manifest);
   return {
     async stop() {
