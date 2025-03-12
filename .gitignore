@@ -1,3 +1,5 @@
 node_modules/
 dist/
 test/**/fixtures/**/env.d.ts
+test/**/fixtures/**/.astro/
+test/**/fixtures/**/deno.lock
