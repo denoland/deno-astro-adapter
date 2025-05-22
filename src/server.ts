@@ -1,7 +1,9 @@
 // Normal Imports
 import type { SSRManifest } from "astro";
 import { App } from "astro/app";
+import { setGetEnv } from "astro/env/setup";
 import type { InternalOptions } from "./types";
+setGetEnv((key) => Deno.env.get(key));
 
 // @ts-expect-error
 import { fromFileUrl, serveFile } from "@deno/astro-adapter/__deno_imports.ts";
