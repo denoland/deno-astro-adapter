@@ -63,17 +63,18 @@ const COMPATIBLE_NODE_MODULES = [
 // to prerender pages. In the final Deno build, this import is
 // replaced with the Deno-specific contents listed below.
 const DENO_IMPORTS_SHIM = `@deno/astro-adapter/__deno_imports.ts`;
-const DENO_IMPORTS = `import { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
+const DENO_IMPORTS =
+  `import { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
 import { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
 
 export function getAdapter(
   args: Options | undefined,
-  config: AstroConfig
+  config: AstroConfig,
 ): AstroAdapter {
   const clientPath = join(fileURLToPath(config.build.client));
   const serverPath = join(
     fileURLToPath(config.build.server),
-    config.build.serverEntry
+    config.build.serverEntry,
   );
   const relativeClientPath = relative(serverPath, clientPath) + "/";
   const realArgs = { ...args, relativeClientPath };
@@ -150,8 +151,8 @@ export default function createIntegration(args?: Options): AstroIntegration {
             pth,
             contents.replace(
               `import { serveFile, fromFileUrl } from '${DENO_IMPORTS_SHIM}';`,
-              DENO_IMPORTS
-            )
+              DENO_IMPORTS,
+            ),
           );
         }
       },
