@@ -87,6 +87,7 @@ export function getAdapter(
       hybridOutput: "stable",
       staticOutput: "stable",
       serverOutput: "stable",
+      sharpImageService: "stable",
     },
     adapterFeatures: {
       envGetSecret: "stable",
