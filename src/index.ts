@@ -89,6 +89,9 @@ export function getAdapter(
       serverOutput: "stable",
       sharpImageService: "stable",
     },
+    adapterFeatures: {
+      envGetSecret: "stable",
+    },
   };
 }
 
