@@ -88,6 +88,9 @@ export function getAdapter(
       staticOutput: "stable",
       serverOutput: "stable",
     },
+    adapterFeatures: {
+      envGetSecret: "stable",
+    },
   };
 }
 
