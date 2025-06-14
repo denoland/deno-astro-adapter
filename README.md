@@ -55,8 +55,6 @@ steps:
    });
    ```
 
-    
-
 Next, update your `preview` script in `package.json` to run `deno`:
 
 ```json ins={8}
@@ -166,11 +164,13 @@ export default defineConfig({
 });
 ```
 
-### deno deploy 
+### deno deploy
 
-In order to use this adapter with deno deploy you need to add npm prefix so that the packages name will be bundled with npm prefix 
+In order to use this adapter with deno deploy you need to add npm prefix so that
+the packages name will be bundled with npm prefix
+
 ```js
-import 'npm:xxx'
+import "npm:xxx";
 // import 'xxx'
 ```
 
@@ -187,7 +187,9 @@ export default defineConfig({
   }),
 });
 ```
-***Good to know*** to get more consistent builds use `deno task build` in ci pipeline   
+
+_**Good to know**_ to get more consistent builds use `deno task build` in ci
+pipeline
 
 ## Examples
 
