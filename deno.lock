@@ -107,6 +107,7 @@
         "npm:@opentelemetry/api@1",
         "npm:@types/node@^20.11.5",
         "npm:astro@^5.4.2",
+        "npm:rollup@^4.35.0",
         "npm:typescript@^5.3.3"
       ]
     }
