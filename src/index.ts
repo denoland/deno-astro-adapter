@@ -3,6 +3,7 @@ import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { BuildConfig, Options } from "./types";
 import { join, relative } from "node:path";
+import { npmPrefixPlugin } from "./rollupPluginNpmPrefix";
 
 const STD_VERSION = `1.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
@@ -140,6 +141,16 @@ export default function createIntegration(args?: Options): AstroIntegration {
               vite.build.rollupOptions.external,
               DENO_IMPORTS_SHIM,
             ];
+          }
+          if (args?.prefixNpmForDenoDeploy) {
+            if (Array.isArray(vite.build.rollupOptions.plugins)) {
+              vite.build.rollupOptions.plugins.push(npmPrefixPlugin());
+            } else if (typeof vite.build.rollupOptions.plugins !== "function") {
+              vite.build.rollupOptions.plugins = [
+                vite.build.rollupOptions.plugins,
+                npmPrefixPlugin(),
+              ];
+            }
           }
         }
       },
