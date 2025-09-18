@@ -153,7 +153,7 @@ export default function createIntegration(args?: Options): AstroIntegration {
           fs.writeFileSync(
             pth,
             contents.replace(
-              `import { serveFile, fromFileUrl } from '${DENO_IMPORTS_SHIM}';`,
+              new RegExp(String.raw`import \{ serveFile, fromFileUrl \} from ['"]${DENO_IMPORTS_SHIM}['"];`),
               DENO_IMPORTS,
             ),
           );
