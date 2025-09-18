@@ -62,10 +62,13 @@ const COMPATIBLE_NODE_MODULES = [
 // We shim deno-specific imports so we can run the code in Node
 // to prerender pages. In the final Deno build, this import is
 // replaced with the Deno-specific contents listed below.
-const DENO_IMPORTS_SHIM = `@deno/astro-adapter/__deno_imports.ts`;
+const DENO_SHIM_PATH = `@deno/astro-adapter/__deno_imports.ts`;
 const DENO_IMPORTS =
   `import { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
 import { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
+const DENO_SHIM_BASE = `import { serveFile, fromFileUrl } from`;
+const DENO_IMPORTS_SHIM = `${DENO_SHIM_BASE} "${DENO_SHIM_PATH}";`;
+const DENO_IMPORTS_SHIM_LEGACY = `${DENO_SHIM_BASE} '${DENO_SHIM_PATH}';`;
 
 export function getAdapter(
   args: Options | undefined,
@@ -134,11 +137,11 @@ export default function createIntegration(args?: Options): AstroIntegration {
           }
 
           if (Array.isArray(vite.build.rollupOptions.external)) {
-            vite.build.rollupOptions.external.push(DENO_IMPORTS_SHIM);
+            vite.build.rollupOptions.external.push(DENO_SHIM_PATH);
           } else if (typeof vite.build.rollupOptions.external !== "function") {
             vite.build.rollupOptions.external = [
               vite.build.rollupOptions.external,
-              DENO_IMPORTS_SHIM,
+              DENO_SHIM_PATH,
             ];
           }
         }
@@ -150,13 +153,17 @@ export default function createIntegration(args?: Options): AstroIntegration {
           if (!file.endsWith(".mjs")) continue;
           const pth = fileURLToPath(new URL(file, chunksDirUrl));
           const contents = fs.readFileSync(pth, "utf-8");
+          if (
+            !contents.includes(DENO_IMPORTS_SHIM_LEGACY) &&
+            !contents.includes(DENO_IMPORTS_SHIM)
+          ) continue;
           fs.writeFileSync(
             pth,
             contents.replace(
-              new RegExp(
-                String
-                  .raw`import \{ serveFile, fromFileUrl \} from ['"]${DENO_IMPORTS_SHIM}['"];`,
-              ),
+              DENO_IMPORTS_SHIM_LEGACY,
+              DENO_IMPORTS,
+            ).replace(
+              DENO_IMPORTS_SHIM,
               DENO_IMPORTS,
             ),
           );
