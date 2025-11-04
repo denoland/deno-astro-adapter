@@ -166,8 +166,8 @@ export default defineConfig({
 
 ## Examples
 
-The [Astro Deno](https://github.com/withastro/astro/tree/main/examples/deno)
-example includes a `preview` command that runs the entry script directly. Run
+The [Deno + Astro Template](https://github.com/denoland/deno-astro-template)
+includes a `preview` command that runs the entry script directly. Run
 `npm run build` then `npm run preview` to run the production deno server.
 
 ## Contributing
