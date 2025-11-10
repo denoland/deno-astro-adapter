@@ -42,6 +42,7 @@
     "@opentelemetry/api": "^1",
     "@types/node": "^20.11.5",
     "astro": "^5.4.2",
+    "rollup": "^4.35.0",
     "typescript": "^5.3.3"
   }
 }

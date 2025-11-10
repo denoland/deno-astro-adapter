@@ -164,6 +164,33 @@ export default defineConfig({
 });
 ```
 
+### deno deploy
+
+In order to use this adapter with deno deploy you need to add npm prefix so that
+the packages name will be bundled with npm prefix
+
+```js
+import "npm:xxx";
+// import 'xxx'
+```
+
+To enable this feature Set prefixNpmForDenoDeploy to `true` like so
+
+```js
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
+
+export default defineConfig({
+  output: "server",
+  adapter: deno({
+    prefixNpmForDenoDeploy: true;
+  }),
+});
+```
+
+_**Good to know**_ to get more consistent builds use `deno task build` in ci
+pipeline
+
 ## Examples
 
 The [Deno + Astro Template](https://github.com/denoland/deno-astro-template)
