@@ -1,7 +1,7 @@
 {
   "name": "@deno/astro-adapter",
   "description": "Deploy your Astro site to a Deno server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "author": "denoland",
   "license": "MIT",
