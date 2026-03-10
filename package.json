@@ -31,7 +31,7 @@
   "dependencies": {},
   "peerDependencies": {
     "@opentelemetry/api": "^1",
-    "astro": "^5.0.1"
+    "astro": "^6.0.0"
   },
   "peerDependenciesMeta": {
     "@opentelemetry/api": {
@@ -41,7 +41,6 @@
   "devDependencies": {
     "@opentelemetry/api": "^1",
     "@types/node": "^20.11.5",
-    "astro": "^5.4.2",
     "typescript": "^5.3.3"
   }
 }

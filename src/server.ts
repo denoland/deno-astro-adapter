@@ -1,12 +1,13 @@
 // Normal Imports
-import type { SSRManifest } from "astro";
-import { App } from "astro/app";
+import { createApp } from "astro/app/entrypoint";
 import { setGetEnv } from "astro/env/setup";
-import type { InternalOptions } from "./types";
 setGetEnv((key) => Deno.env.get(key));
+import * as options from "virtual:@deno/astro-adapter:config";
 
 // @ts-expect-error
 import { fromFileUrl, serveFile } from "@deno/astro-adapter/__deno_imports.ts";
+
+const app = createApp();
 
 let _server: Deno.Server | undefined = undefined;
 let _startPromise: Promise<void> | undefined = undefined;
@@ -26,16 +27,11 @@ function removeTrailingForwardSlash(path: string) {
   return path.endsWith("/") ? path.slice(0, path.length - 1) : path;
 }
 
-export function start(manifest: SSRManifest, options: InternalOptions) {
-  if (options.start === false) {
-    return;
-  }
-
+function start() {
   // undefined = not yet loaded, null = not installed
   let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
 
   const clientRoot = new URL(options.relativeClientPath, import.meta.url);
-  const app = new App(manifest);
   const handler = async (request: Request, handlerInfo: any) => {
     if (trace === undefined) {
       try {
@@ -110,24 +106,24 @@ export function start(manifest: SSRManifest, options: InternalOptions) {
   console.error(`Server running on port ${port}`);
 }
 
-export function createExports(manifest: SSRManifest, options: InternalOptions) {
-  const app = new App(manifest);
-  return {
-    async stop() {
-      if (_server) {
-        _server.shutdown();
-        _server = undefined;
-      }
-      await Promise.resolve(_startPromise);
-    },
-    running() {
-      return _server !== undefined;
-    },
-    async start() {
-      return start(manifest, options);
-    },
-    async handle(request: Request) {
-      return app.render(request);
-    },
-  };
+if (options.start) {
+  start();
+}
+
+export async function stop() {
+  if (_server) {
+    _server.shutdown();
+    _server = undefined;
+  }
+  await Promise.resolve(_startPromise);
+}
+
+export function running() {
+  return _server !== undefined;
+}
+
+export { start };
+
+export async function handle(request: Request) {
+  return app.render(request);
 }

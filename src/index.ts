@@ -1,8 +1,9 @@
-import type { AstroAdapter, AstroConfig, AstroIntegration } from "astro";
+import type { AstroIntegration } from "astro";
 import * as fs from "node:fs";
-import { fileURLToPath } from "node:url";
-import type { BuildConfig, Options } from "./types";
 import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { BuildConfig, InternalOptions, Options } from "./types";
+import { createConfigPlugin } from "./vite-plugin-config";
 
 const STD_VERSION = `1.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
@@ -70,41 +71,38 @@ const DENO_SHIM_BASE = `import { serveFile, fromFileUrl } from`;
 const DENO_IMPORTS_SHIM = `${DENO_SHIM_BASE} "${DENO_SHIM_PATH}";`;
 const DENO_IMPORTS_SHIM_LEGACY = `${DENO_SHIM_BASE} '${DENO_SHIM_PATH}';`;
 
-export function getAdapter(
-  args: Options | undefined,
-  config: AstroConfig,
-): AstroAdapter {
-  const clientPath = join(fileURLToPath(config.build.client));
-  const serverPath = join(
-    fileURLToPath(config.build.server),
-    config.build.serverEntry,
-  );
-  const relativeClientPath = relative(serverPath, clientPath) + "/";
-  const realArgs = { ...args, relativeClientPath };
-  return {
-    name: "@deno/astro-adapter",
-    serverEntrypoint: "@deno/astro-adapter/server.ts",
-    args: realArgs,
-    exports: ["stop", "handle", "start", "running"],
-    supportedAstroFeatures: {
-      hybridOutput: "stable",
-      staticOutput: "stable",
-      serverOutput: "stable",
-      sharpImageService: "stable",
-    },
-    adapterFeatures: {
-      envGetSecret: "stable",
-    },
-  };
-}
-
 export default function createIntegration(args?: Options): AstroIntegration {
   let _buildConfig: BuildConfig;
+  let internalOptions: InternalOptions = { ...args, relativeClientPath: "" };
   return {
     name: "@deno/astro-adapter",
     hooks: {
+      "astro:config:setup": ({ updateConfig }) => {
+        updateConfig({
+          vite: {
+            plugins: [createConfigPlugin(internalOptions)],
+          },
+        });
+      },
       "astro:config:done": ({ setAdapter, config }) => {
-        setAdapter(getAdapter(args, config));
+        const clientPath = join(fileURLToPath(config.build.client));
+        const serverPath = join(
+          fileURLToPath(config.build.server),
+          config.build.serverEntry,
+        );
+        internalOptions.relativeClientPath = relative(serverPath, clientPath) +
+          "/";
+        setAdapter({
+          name: "@deno/astro-adapter",
+          entrypointResolution: "auto",
+          serverEntrypoint: "@deno/astro-adapter/server.ts",
+          supportedAstroFeatures: {
+            hybridOutput: "stable",
+            staticOutput: "stable",
+            serverOutput: "stable",
+            sharpImageService: "stable",
+          },
+        });
         _buildConfig = config.build;
       },
       "astro:build:setup": ({ vite, target }) => {
@@ -156,16 +154,14 @@ export default function createIntegration(args?: Options): AstroIntegration {
           if (
             !contents.includes(DENO_IMPORTS_SHIM_LEGACY) &&
             !contents.includes(DENO_IMPORTS_SHIM)
-          ) continue;
+          ) {
+            continue;
+          }
           fs.writeFileSync(
             pth,
-            contents.replace(
-              DENO_IMPORTS_SHIM_LEGACY,
-              DENO_IMPORTS,
-            ).replace(
-              DENO_IMPORTS_SHIM,
-              DENO_IMPORTS,
-            ),
+            contents
+              .replace(DENO_IMPORTS_SHIM_LEGACY, DENO_IMPORTS)
+              .replace(DENO_IMPORTS_SHIM, DENO_IMPORTS),
           );
         }
       },
