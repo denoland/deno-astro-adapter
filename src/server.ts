@@ -106,7 +106,7 @@ function start() {
   console.error(`Server running on port ${port}`);
 }
 
-if (options.start) {
+if (options.start ?? true) {
   start();
 }
 
