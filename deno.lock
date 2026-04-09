@@ -1,5 +1,5 @@
 {
-  "version": "4",
+  "version": "5",
   "specifiers": {
     "jsr:@std/assert@1.0": "1.0.6",
     "jsr:@std/cli@^1.0.6": "1.0.6",
@@ -12,6 +12,7 @@
     "jsr:@std/path@1.0": "1.0.6",
     "jsr:@std/path@^1.0.6": "1.0.6",
     "jsr:@std/streams@^1.0.7": "1.0.7",
+    "npm:@opentelemetry/api@1": "1.9.1",
     "npm:@types/node@^20.11.5": "20.14.5",
     "npm:typescript@^5.3.3": "5.4.5"
   },
@@ -60,6 +61,9 @@
     }
   },
   "npm": {
+    "@opentelemetry/api@1.9.1": {
+      "integrity": "sha512-gLyJlPHPZYdAk1JENA9LeHejZe1Ti77/pTeFm/nMXmQH/HFZlcS/O2XJB+L8fkbrNSqhdtlvjBVjxwUYanNH5Q=="
+    },
     "@types/node@20.14.5": {
       "integrity": "sha512-aoRR+fJkZT2l0aGOJhuA8frnCSoNX6W7U2mpNq63+BxBIj5BQFt8rHy627kijCmm63ijdSdwvGgpUsU6MBsZZA==",
       "dependencies": [
@@ -67,7 +71,8 @@
       ]
     },
     "typescript@5.4.5": {
-      "integrity": "sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ=="
+      "integrity": "sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==",
+      "bin": true
     },
     "undici-types@5.26.5": {
       "integrity": "sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA=="
