@@ -126,7 +126,8 @@ export default function createIntegration(args?: Options): AstroIntegration {
 
           if (Array.isArray(vite.build.rollupOptions.external)) {
             vite.build.rollupOptions.external.push(
-              JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH,
+              JSR_STD_HTTP_FILE_SERVER,
+              JSR_STD_PATH,
             );
           } else if (typeof vite.build.rollupOptions.external !== "function") {
             vite.build.rollupOptions.external = [

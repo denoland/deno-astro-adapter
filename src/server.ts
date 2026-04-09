@@ -2,7 +2,7 @@ import { createApp } from "astro/app/entrypoint";
 import { setGetEnv } from "astro/env/setup";
 setGetEnv((key) => Deno.env.get(key));
 import * as options from "virtual:@deno/astro-adapter:config";
-import { JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH } from "./index"
+import { JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH } from "./index";
 
 const app = createApp();
 
