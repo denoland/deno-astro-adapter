@@ -18,7 +18,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./server.ts": "./src/server.ts",
-    "./__deno_imports.ts": "./src/__deno_imports.ts",
     "./package.json": "./package.json"
   },
   "files": [
