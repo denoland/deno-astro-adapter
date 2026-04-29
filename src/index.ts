@@ -58,12 +58,12 @@ const COMPATIBLE_NODE_MODULES = [
   "zlib",
 ];
 
-export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.0.0/file-server";
-export const JSR_STD_PATH = "jsr:@std/path@^1.0.0";
+export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.0/file-server";
+export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
 
 export default function createIntegration(args?: Options): AstroIntegration {
   let _buildConfig: BuildConfig;
-  let internalOptions: InternalOptions = { ...args, relativeClientPath: "" };
+  const internalOptions: InternalOptions = { ...args, relativeClientPath: "" };
   return {
     name: "@deno/astro-adapter",
     hooks: {
