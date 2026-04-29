@@ -10,7 +10,6 @@ let _server: Deno.Server | undefined = undefined;
 let _startPromise: Promise<void> | undefined = undefined;
 
 async function* getPrerenderedFiles(clientRoot: URL): AsyncGenerator<URL> {
-  // @ts-expect-error
   for await (const ent of Deno.readDir(clientRoot)) {
     if (ent.isDirectory) {
       yield* getPrerenderedFiles(new URL(`./${ent.name}/`, clientRoot));
@@ -124,6 +123,6 @@ export function running() {
 
 export { start };
 
-export async function handle(request: Request) {
+export function handle(request: Request) {
   return app.render(request);
 }
