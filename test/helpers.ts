@@ -8,7 +8,7 @@ interface AstroServerModule {
 }
 
 const dir = new URL("./", import.meta.url);
-const defaultURL = new URL("http://localhost:8085/");
+const defaultURL = new URL("http://0.0.0.0:8085/");
 
 export const defaultTestPermissions: Deno.PermissionOptions = {
   read: true,
@@ -57,7 +57,7 @@ export async function startModFromSubprocess(
   baseUrl: URL,
 ): Promise<AstroServerModule> {
   const entryUrl = new URL("./dist/server/entry.mjs", baseUrl);
-  const command = new Deno.Command("deno", {
+  const command = new Deno.Command(Deno.execPath(), {
     args: ["run", "--allow-env", "--allow-net", fromFileUrl(entryUrl)],
     cwd: fromFileUrl(baseUrl),
     stderr: "piped",
@@ -102,7 +102,6 @@ function safeKill(process: Deno.ChildProcess) {
 
 async function waitForPort(url: URL, timeout = 30_000) {
   const start = Date.now();
-
   while (Date.now() - start < timeout) {
     try {
       const conn = await Deno.connect({
