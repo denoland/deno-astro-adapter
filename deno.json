@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/"
+  },
+  "workspace": ["test/fixtures/*"],
+  "imports": {
+    "@opentelemetry/api": "npm:@opentelemetry/api@^1",
+    "@std/assert": "jsr:@std/assert@^1.0.19"
+  }
+}

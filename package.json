@@ -1,7 +1,7 @@
 {
   "name": "@deno/astro-adapter",
   "description": "Deploy your Astro site to a Deno server",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "author": "denoland",
   "license": "MIT",
@@ -10,8 +10,12 @@
     "url": "https://github.com/denoland/deno-astro-adapter.git"
   },
   "keywords": [
-    "withastro",
-    "astro-adapter"
+    "adapter",
+    "astro",
+    "astro-adapter",
+    "deno",
+    "ssr",
+    "withastro"
   ],
   "bugs": "https://github.com/denoland/deno-astro-adapter/issues",
   "homepage": "https://github.com/denoland/deno-astro-adapter/",
@@ -23,11 +27,6 @@
   "files": [
     "src"
   ],
-  "scripts": {
-    "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/",
-    "fmt": "deno fmt"
-  },
-  "dependencies": {},
   "peerDependencies": {
     "@opentelemetry/api": "^1",
     "astro": "^6.0.0"
@@ -36,10 +35,5 @@
     "@opentelemetry/api": {
       "optional": true
     }
-  },
-  "devDependencies": {
-    "@opentelemetry/api": "^1",
-    "@types/node": "^20.11.5",
-    "typescript": "^5.3.3"
   }
 }
