@@ -1,10 +1,16 @@
 {
-  "extends": "./tsconfig.base.json",
-  "include": ["src", "virtual.d.ts"],
   "compilerOptions": {
-    "module": "ES2022",
-    "outDir": "./dist",
-    "rootDir": ".",
-    "moduleResolution": "Bundler"
-  }
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "virtual.d.ts"
+  ]
 }
