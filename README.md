@@ -36,46 +36,52 @@ and creates a script to run your project on a Deno server.
 Add the Deno adapter to enable SSR in your Astro project with the following
 steps:
 
-1. Add adapter
+#### 1. Add an adapter
 
-   ```bash
-   deno add npm:@deno/astro-adapter
-   ```
+```sh
+deno add npm:@deno/astro-adapter
+```
 
-1. Update your `astro.config.mjs` project configuration file with the changes
-   below.
+#### 2. Update your astro.config.mjs file
 
-   ```js ins={3,6-7}
-   // astro.config.mjs
-   import { defineConfig } from "astro/config";
-   import deno from "@deno/astro-adapter";
+```js ins={3,6-7}
+// astro.config.mjs
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
 
-   export default defineConfig({
-     output: "server",
-     adapter: deno(),
-   });
-   ```
+export default defineConfig({
+  output: "server",
+  adapter: deno(),
+});
+```
 
-Next, update your `preview` script in `package.json` to run `deno`:
+#### 3. Next, update your deno.json (or package.json)
 
-```json ins={8}
+```jsonc
+// deno.json
+{
+  "tasks": {
+    "dev": "deno run -A npm:astro dev",
+    "build": "deno run -A npm:astro build",
+    "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs",
+  },
+}
+
 // package.json
 {
-  // ...
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs"
-  }
+    "dev": "deno run -A npm:astro dev",
+    "build": "deno run -A npm:astro build",
+    "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs",
+  },
 }
 ```
 
-You can now use this command to preview your production Astro site locally with
-Deno.
+#### 4. You can now preview your production Astro site locally with Deno
 
-```bash
-npm run preview
+```sh
+deno task build 
+deno task preview
 ```
 
 ## Usage
@@ -186,10 +192,14 @@ The Deno Astro Adapter is currently built and tested with Deno 2.x. To test your
 changes make sure you have Deno 2.x installed
 
 ```sh
-pnpm run test
+deno task test
 ```
 
-Finally, you can check your code formatting with: `deno fmt`.
+Finally, you can check your code formatting with
+
+```sh
+deno fmt
+```
 
 This package is maintained by Deno's Core team. You're welcome to submit an
 issue or PR!
