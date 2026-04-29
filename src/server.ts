@@ -1,11 +1,8 @@
-// Normal Imports
 import { createApp } from "astro/app/entrypoint";
 import { setGetEnv } from "astro/env/setup";
 setGetEnv((key) => Deno.env.get(key));
 import * as options from "virtual:@deno/astro-adapter:config";
-
-// @ts-expect-error
-import { fromFileUrl, serveFile } from "@deno/astro-adapter/__deno_imports.ts";
+import { JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH } from "./index";
 
 const app = createApp();
 
@@ -13,7 +10,6 @@ let _server: Deno.Server | undefined = undefined;
 let _startPromise: Promise<void> | undefined = undefined;
 
 async function* getPrerenderedFiles(clientRoot: URL): AsyncGenerator<URL> {
-  // @ts-expect-error
   for await (const ent of Deno.readDir(clientRoot)) {
     if (ent.isDirectory) {
       yield* getPrerenderedFiles(new URL(`./${ent.name}/`, clientRoot));
@@ -27,12 +23,15 @@ function removeTrailingForwardSlash(path: string) {
   return path.endsWith("/") ? path.slice(0, path.length - 1) : path;
 }
 
-function start() {
+async function start() {
+  const { serveFile } = await import(JSR_STD_HTTP_FILE_SERVER);
+  const { fromFileUrl } = await import(JSR_STD_PATH);
+
   // undefined = not yet loaded, null = not installed
   let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
 
   const clientRoot = new URL(options.relativeClientPath, import.meta.url);
-  const handler = async (request: Request, handlerInfo: any) => {
+  const handler: Deno.ServeHandler = async (request, handlerInfo) => {
     if (trace === undefined) {
       try {
         trace = (await import("@opentelemetry/api")).trace;
@@ -67,8 +66,8 @@ function start() {
     let fileResp = await serveFile(request, fromFileUrl(localPath));
 
     // Attempt to serve `index.html` if 404
-    if (fileResp.status == 404) {
-      let fallback;
+    if (fileResp.status === 404) {
+      let fallback: URL | undefined;
       for await (const file of getPrerenderedFiles(clientRoot)) {
         const pathname = file.pathname.replace(/\/(index)?\.html$/, "");
         if (removeTrailingForwardSlash(localPath.pathname).endsWith(pathname)) {
@@ -82,7 +81,7 @@ function start() {
     }
 
     // If the static file can't be found
-    if (fileResp.status == 404) {
+    if (fileResp.status === 404) {
       // Render the astro custom 404 page
       const response = await app.render(request);
 
@@ -124,6 +123,6 @@ export function running() {
 
 export { start };
 
-export async function handle(request: Request) {
+export function handle(request: Request) {
   return app.render(request);
 }

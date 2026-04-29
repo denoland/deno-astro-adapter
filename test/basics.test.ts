@@ -1,10 +1,5 @@
-/* Deno types consider DOM elements nullable */
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.35-alpha/deno-dom-wasm.ts";
-import {
-  assert,
-  assertEquals,
-} from "https://deno.land/std@0.158.0/testing/asserts.ts";
+import { DOMParser } from "@b-fuze/deno-dom";
+import { assert, assertEquals } from "@std/assert";
 import { defaultTestPermissions, runBuildAndStartApp } from "./helpers.ts";
 
 // this needs to be here and not in the specific test case, because
@@ -47,7 +42,7 @@ Deno.test({
     });
 
     await t.step("Loads style assets", async () => {
-      let resp = await fetch(app.url);
+      const resp = await fetch(app.url);
       const html = await resp.text();
 
       const doc = new DOMParser().parseFromString(html, `text/html`);
@@ -122,6 +117,6 @@ Deno.test({
       await resp.text();
     });
 
-    app.stop();
+    await app.stop();
   },
 });
