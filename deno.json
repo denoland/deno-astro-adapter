@@ -4,7 +4,11 @@
   },
   "workspace": ["test/fixtures/*"],
   "imports": {
+    "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.56",
     "@opentelemetry/api": "npm:@opentelemetry/api@^1",
-    "@std/assert": "jsr:@std/assert@^1.0.19"
-  }
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "@std/testing": "jsr:@std/testing@^1.0.18"
+  },
+  "nodeModulesDir": "auto"
 }
