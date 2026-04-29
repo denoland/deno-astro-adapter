@@ -1,80 +1,87 @@
 # @deno/astro-adapter
 
-This adapter allows Astro to deploy your SSR site to Deno targets.
+This adapter allows Astro to run your SSR site in Deno. Astro 6 works in Deno
+runtime (without Node).
 
 Learn how to deploy your Astro site in our
-[Deno Deploy deployment guide](https://docs.astro.build/en/guides/deploy/deno/).
+[Deno Deploy guide](https://docs.astro.build/en/guides/deploy/deno/).
 
-- <strong> [Why Astro Deno](#why-astro-deno)</strong>
-- <strong> [Installation](#installation)</strong>
-- <strong> [Usage](#usage)</strong>
-- <strong> [Configuration](#configuration)</strong>
-- <strong> [Examples](#examples)</strong>
-- <strong> [Contributing](#contributing)</strong>
+## Overview
+
+- [Why Astro Deno](#why-astro-deno)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Examples](#examples)
+- [Contributing](#contributing)
 
 ## Why Astro Deno
-
-If you're using Astro as a static site builder—its behavior out of the box—you
-don't need an adapter.
-
-If you wish to
-[use server-side rendering (SSR)](https://docs.astro.build/en/guides/server-side-rendering/),
-Astro requires an adapter that matches your deployment runtime.
-
-You also need an adapter or server if you wish to deploy your site to
-[Deno Deploy](https://deno.com/deploy).
 
 [Deno](https://deno.com/) is a runtime similar to Node, but with an API that's
 more similar to the browser's API. This adapter provides access to Deno's API
 and creates a script to run your project on a Deno server.
+
+- **Are you using Astro as a static site builder?**\
+  No, you don't need an adapter
+
+- **Are you using Astro server-side rendering (SSR)?**\
+  Yes, you need an adapter
+
+- **Do you wish to deploy your site to
+  [Deno Deploy](https://deno.com/deploy)?**\
+  Yes, you also need an adapter
 
 ## Installation
 
 Add the Deno adapter to enable SSR in your Astro project with the following
 steps:
 
-1. Install the Deno adapter to your project’s dependencies using your preferred
-   package manager. If you’re using npm or aren’t sure, run this in the
-   terminal:
+#### 1. Add an adapter
 
-   ```bash
-   npm install @deno/astro-adapter
-   ```
+```sh
+deno add npm:@deno/astro-adapter
+```
 
-1. Update your `astro.config.mjs` project configuration file with the changes
-   below.
+#### 2. Update your astro.config.mjs file
 
-   ```js ins={3,6-7}
-   // astro.config.mjs
-   import { defineConfig } from "astro/config";
-   import deno from "@deno/astro-adapter";
+```js ins={3,6-7}
+// astro.config.mjs
+import { defineConfig } from "astro/config";
+import deno from "@deno/astro-adapter";
 
-   export default defineConfig({
-     output: "server",
-     adapter: deno(),
-   });
-   ```
+export default defineConfig({
+  output: "server",
+  adapter: deno(),
+});
+```
 
-Next, update your `preview` script in `package.json` to run `deno`:
+#### 3. Next, update your deno.json (or package.json)
 
-```json ins={8}
+```jsonc
+// deno.json
+{
+  "tasks": {
+    "dev": "deno run -A npm:astro dev",
+    "build": "deno run -A npm:astro build",
+    "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs",
+  },
+}
+
 // package.json
 {
-  // ...
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs"
-  }
+    "dev": "deno run -A npm:astro dev",
+    "build": "deno run -A npm:astro build",
+    "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs",
+  },
 }
 ```
 
-You can now use this command to preview your production Astro site locally with
-Deno.
+#### 4. You can now preview your production Astro site locally with Deno
 
-```bash
-npm run preview
+```sh
+deno task build 
+deno task preview
 ```
 
 ## Usage
@@ -173,24 +180,26 @@ includes a `preview` command that runs the entry script directly. Run
 ## Contributing
 
 To configure your development environment, clone the repository and install
-[`pnpm`](https://pnpm.io/). `pnpm` is a package manager that emphasizes disk
-space efficiency and is used for managing the dependencies of this project. Once
-installed, run `pnpm i` to install the dependencies.
+dependencies.
 
 ```sh
 git clone
 cd astro-adapter
-pnpm i
+deno i
 ```
 
 The Deno Astro Adapter is currently built and tested with Deno 2.x. To test your
 changes make sure you have Deno 2.x installed
 
 ```sh
-pnpm run test
+deno task test
 ```
 
-Finally, you can check your code formatting with: `pnpm run fmt`.
+Finally, you can check your code formatting with
+
+```sh
+deno fmt
+```
 
 This package is maintained by Deno's Core team. You're welcome to submit an
 issue or PR!
