@@ -1,5 +1,11 @@
-import { fromFileUrl } from "jsr:@std/path@1.0";
-import { assert } from "jsr:@std/assert@1.0";
+import { fromFileUrl } from "@std/path";
+import { assert } from "@std/assert";
+
+interface AstroServerModule {
+  start: () => Promise<void>;
+  stop: () => Promise<void>;
+  running?: () => boolean;
+}
 
 const dir = new URL("./", import.meta.url);
 const defaultURL = new URL("http://localhost:8085/");
@@ -11,11 +17,21 @@ export const defaultTestPermissions: Deno.PermissionOptions = {
   env: true,
 };
 
-declare type ExitCallback = () => Promise<void>;
-
 export async function runBuild(fixturePath: string) {
-  const command = new Deno.Command("node_modules/.bin/astro", {
-    args: ["build", "--silent"],
+  const command = new Deno.Command(Deno.execPath(), {
+    args: [
+      "run",
+      "--allow-env",
+      "--allow-read",
+      "--allow-write",
+      "--allow-run",
+      "--allow-net",
+      "--allow-ffi",
+      "--allow-sys",
+      "npm:astro",
+      "build",
+      "--silent",
+    ],
     cwd: fromFileUrl(new URL(fixturePath, dir)),
   });
   const process = command.spawn();
@@ -27,20 +43,17 @@ export async function runBuild(fixturePath: string) {
   }
 }
 
-export async function startModFromImport(baseUrl: URL): Promise<ExitCallback> {
+export async function startModFromImport(
+  baseUrl: URL,
+): Promise<AstroServerModule> {
   const entryUrl = new URL("./dist/server/entry.mjs", baseUrl);
   const mod = await import(entryUrl.toString());
-
-  if (!mod.running()) {
-    mod.start();
-  }
-
-  return () => mod.stop();
+  return mod;
 }
 
 export async function startModFromSubprocess(
   baseUrl: URL,
-): Promise<ExitCallback> {
+): Promise<AstroServerModule> {
   const entryUrl = new URL("./dist/server/entry.mjs", baseUrl);
   const command = new Deno.Command("deno", {
     args: ["run", "--allow-env", "--allow-net", fromFileUrl(entryUrl)],
@@ -49,9 +62,14 @@ export async function startModFromSubprocess(
   });
   const process = command.spawn();
   await waitForServer(process);
-  return async () => {
-    safeKill(process);
-    await process.status;
+
+  // here we simulate Astro entry module public interface
+  return {
+    start: async () => {}, // stub, assuming server running after waitForServer
+    stop: async () => {
+      safeKill(process);
+      await process.status;
+    },
   };
 }
 
@@ -84,16 +102,16 @@ export async function runBuildAndStartApp(fixturePath: string) {
   const url = new URL(fixturePath, dir);
 
   await runBuild(fixturePath);
-  const stop = await startModFromImport(url);
+  const app = await startModFromImport(url);
 
-  return { url: defaultURL, stop };
+  return { url: defaultURL, ...app };
 }
 
 export async function runBuildAndStartAppFromSubprocess(fixturePath: string) {
   const url = new URL(fixturePath, dir);
 
   await runBuild(fixturePath);
-  const stop = await startModFromSubprocess(url);
+  const app = await startModFromSubprocess(url);
 
-  return { url: defaultURL, stop };
+  return { url: defaultURL, ...app };
 }
