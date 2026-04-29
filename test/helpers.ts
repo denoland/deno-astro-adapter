@@ -48,6 +48,8 @@ export async function startModFromImport(
 ): Promise<AstroServerModule> {
   const entryUrl = new URL("./dist/server/entry.mjs", baseUrl);
   const mod = await import(entryUrl.toString());
+  await waitForPort(defaultURL);
+
   return mod;
 }
 
@@ -96,6 +98,27 @@ function safeKill(process: Deno.ChildProcess) {
   } catch {
     // ignore
   }
+}
+
+async function waitForPort(url: URL, timeout = 30_000) {
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    try {
+      const conn = await Deno.connect({
+        hostname: url.hostname,
+        port: parseInt(url.port),
+      });
+      conn.close();
+      return; // Server is ready
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+
+  throw new Error(
+    `Astro server did not start on port ${url.port} (timeout)`,
+  );
 }
 
 export async function runBuildAndStartApp(fixturePath: string) {
