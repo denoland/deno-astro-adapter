@@ -28,6 +28,7 @@
     "npm:@opentelemetry/api@1": "1.9.1",
     "npm:astro@*": "6.1.10",
     "npm:astro@6": "6.1.10",
+    "npm:astro@^6.1.10": "6.1.10",
     "npm:react-dom@^19.2.5": "19.2.5_react@19.2.5",
     "npm:react@^19.2.5": "19.2.5"
   },
@@ -2949,7 +2950,8 @@
       "jsr:@std/assert@^1.0.19",
       "jsr:@std/path@^1.1.4",
       "jsr:@std/testing@^1.0.18",
-      "npm:@opentelemetry/api@1"
+      "npm:@opentelemetry/api@1",
+      "npm:astro@^6.1.10"
     ],
     "members": {
       "test/fixtures/basics": {
