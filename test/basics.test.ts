@@ -1,6 +1,10 @@
 import { DOMParser } from "@b-fuze/deno-dom";
 import { assert, assertEquals } from "@std/assert";
-import { defaultTestPermissions, runBuildAndStartApp } from "./helpers.ts";
+import {
+  defaultTestPermissions,
+  runBuildAndStartApp,
+  runBuildAndStartAppFromSubprocess,
+} from "./helpers.ts";
 
 // this needs to be here and not in the specific test case, because
 // the variables are loaded in the global scope of the built server
@@ -8,115 +12,128 @@ import { defaultTestPermissions, runBuildAndStartApp } from "./helpers.ts";
 const varContent = "this is a value stored in env variable";
 Deno.env.set("SOME_VARIABLE", varContent);
 
-Deno.test({
-  name: "Basics",
-  permissions: defaultTestPermissions,
-  sanitizeResources: false,
-  sanitizeOps: false,
-  async fn(t) {
-    const app = await runBuildAndStartApp("./fixtures/basics/");
-
-    await t.step("Works", async () => {
-      const resp = await fetch(app.url);
-      assertEquals(resp.status, 200);
-
-      const html = await resp.text();
-      assert(html);
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const div = doc!.querySelector("#react");
-
-      assert(div, "div exists");
-    });
-
-    await t.step("Custom 404", async () => {
-      const resp = await fetch(new URL("this-does-not-exist", app.url));
-      assertEquals(resp.status, 404);
-
-      const html = await resp.text();
-      assert(html);
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const header = doc!.querySelector("#custom-404");
-      assert(header, "displays custom 404");
-    });
-
-    await t.step("Loads style assets", async () => {
-      const resp = await fetch(app.url);
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const style = doc!.querySelector("style");
-
-      assert(style?.textContent?.includes("Courier New"));
-    });
-
-    await t.step("Correctly loads run-time env variables", async () => {
-      const resp = await fetch(app.url);
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const p = doc!.querySelector("p#env-value");
-      assertEquals(p!.innerText, varContent);
-    });
-
-    await t.step("Can use a module with top-level await", async () => {
-      const resp = await fetch(app.url);
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const p = doc!.querySelector("p#module-value");
-      assertEquals(p!.innerText, "bar");
-    });
-
-    await t.step("Works with Markdown", async () => {
-      const resp = await fetch(new URL("markdown", app.url));
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const h1 = doc!.querySelector("h1");
-      assertEquals(h1!.innerText, "Heading from Markdown");
-    });
-
-    await t.step("Works with MDX", async () => {
-      const resp = await fetch(new URL("mdx", app.url));
-      const html = await resp.text();
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const h1 = doc!.querySelector("h1");
-      assertEquals(h1!.innerText, "Heading from MDX");
-    });
-
-    await t.step("Astro.cookies", async () => {
-      const url = new URL("/admin", app.url);
-      const resp = await fetch(url, { redirect: "manual" });
-      assertEquals(resp.status, 302);
-
-      const headers = resp.headers;
-      assertEquals(
-        headers.get("set-cookie"),
-        "logged-in=false; Max-Age=77760000; Path=/",
-      );
-    });
-
-    await t.step("perendering", async () => {
-      const resp = await fetch(new URL("/prerender", app.url));
-      assertEquals(resp.status, 200);
-
-      const html = await resp.text();
-      assert(html);
-
-      const doc = new DOMParser().parseFromString(html, `text/html`);
-      const h1 = doc!.querySelector("h1");
-      assertEquals(h1!.innerText, "test");
-    });
-
-    await t.step("node compatibility", async () => {
-      const resp = await fetch(new URL("/nodecompat", app.url));
-      assertEquals(resp.status, 200);
-      await resp.text();
-    });
-
-    await app.stop();
+const scenarios = [
+  {
+    name: "Import",
+    app: () => runBuildAndStartApp("./fixtures/basics/"),
   },
-});
+  {
+    name: "Subprocess",
+    app: () => runBuildAndStartAppFromSubprocess("./fixtures/basics/"),
+  },
+];
+
+for (const scenario of scenarios) {
+  Deno.test({
+    name: scenario.name,
+    permissions: defaultTestPermissions,
+    sanitizeResources: false,
+    sanitizeOps: false,
+    async fn(t) {
+      const app = await scenario.app();
+
+      await t.step("Works", async () => {
+        const resp = await fetch(app.url);
+        assertEquals(resp.status, 200);
+
+        const html = await resp.text();
+        assert(html);
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const div = doc!.querySelector("#react");
+
+        assert(div, "div exists");
+      });
+
+      await t.step("Custom 404", async () => {
+        const resp = await fetch(new URL("this-does-not-exist", app.url));
+        assertEquals(resp.status, 404);
+
+        const html = await resp.text();
+        assert(html);
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const header = doc!.querySelector("#custom-404");
+        assert(header, "displays custom 404");
+      });
+
+      await t.step("Loads style assets", async () => {
+        const resp = await fetch(app.url);
+        const html = await resp.text();
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const style = doc!.querySelector("style");
+
+        assert(style?.textContent?.includes("Courier New"));
+      });
+
+      await t.step("Correctly loads run-time env variables", async () => {
+        const resp = await fetch(app.url);
+        const html = await resp.text();
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const p = doc!.querySelector("p#env-value");
+        assertEquals(p!.innerText, varContent);
+      });
+
+      await t.step("Can use a module with top-level await", async () => {
+        const resp = await fetch(app.url);
+        const html = await resp.text();
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const p = doc!.querySelector("p#module-value");
+        assertEquals(p!.innerText, "bar");
+      });
+
+      await t.step("Works with Markdown", async () => {
+        const resp = await fetch(new URL("markdown", app.url));
+        const html = await resp.text();
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const h1 = doc!.querySelector("h1");
+        assertEquals(h1!.innerText, "Heading from Markdown");
+      });
+
+      await t.step("Works with MDX", async () => {
+        const resp = await fetch(new URL("mdx", app.url));
+        const html = await resp.text();
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const h1 = doc!.querySelector("h1");
+        assertEquals(h1!.innerText, "Heading from MDX");
+      });
+
+      await t.step("Astro.cookies", async () => {
+        const url = new URL("/admin", app.url);
+        const resp = await fetch(url, { redirect: "manual" });
+        assertEquals(resp.status, 302);
+
+        const headers = resp.headers;
+        assertEquals(
+          headers.get("set-cookie"),
+          "logged-in=false; Max-Age=77760000; Path=/",
+        );
+      });
+
+      await t.step("perendering", async () => {
+        const resp = await fetch(new URL("/prerender", app.url));
+        assertEquals(resp.status, 200);
+
+        const html = await resp.text();
+        assert(html);
+
+        const doc = new DOMParser().parseFromString(html, `text/html`);
+        const h1 = doc!.querySelector("h1");
+        assertEquals(h1!.innerText, "test");
+      });
+
+      await t.step("node compatibility", async () => {
+        const resp = await fetch(new URL("/nodecompat", app.url));
+        assertEquals(resp.status, 200);
+        await resp.text();
+      });
+
+      await app.stop();
+    },
+  });
+}

@@ -58,7 +58,13 @@ export async function startModFromSubprocess(
 ): Promise<AstroServerModule> {
   const entryUrl = new URL("./dist/server/entry.mjs", baseUrl);
   const command = new Deno.Command(Deno.execPath(), {
-    args: ["run", "--allow-env", "--allow-net", fromFileUrl(entryUrl)],
+    args: [
+      "run",
+      "--allow-env",
+      "--allow-net",
+      "--allow-read",
+      fromFileUrl(entryUrl),
+    ],
     cwd: fromFileUrl(baseUrl),
     stderr: "piped",
   });
