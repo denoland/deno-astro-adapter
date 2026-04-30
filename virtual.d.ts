@@ -1,6 +1,6 @@
 /// <reference types="astro/client" />
 
 declare module "virtual:@deno/astro-adapter:config" {
-  const config: import("./src/types.js").InternalOptions;
+  const config: import("./src/types.ts").InternalOptions;
   export = config;
 }

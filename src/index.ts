@@ -1,8 +1,8 @@
 import type { AstroIntegration } from "astro";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { BuildConfig, InternalOptions, Options } from "./types";
-import { createConfigPlugin } from "./vite-plugin-config";
+import type { BuildConfig, InternalOptions, Options } from "./types.ts";
+import { createConfigPlugin } from "./vite-plugin-config.ts";
 
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
 const COMPATIBLE_NODE_MODULES = [

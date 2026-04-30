@@ -2,11 +2,11 @@ import { createApp } from "astro/app/entrypoint";
 import { setGetEnv } from "astro/env/setup";
 setGetEnv((key) => Deno.env.get(key));
 import * as options from "virtual:@deno/astro-adapter:config";
-import { JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH } from "./index";
+import { JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH } from "./index.ts";
 
 const app = createApp();
 
-let _server: Deno.Server | undefined = undefined;
+let _server: Deno.HttpServer | undefined = undefined;
 let _startPromise: Promise<void> | undefined = undefined;
 
 async function* getPrerenderedFiles(clientRoot: URL): AsyncGenerator<URL> {
