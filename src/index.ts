@@ -58,6 +58,8 @@ const COMPATIBLE_NODE_MODULES = [
   "zlib",
 ];
 
+// These are used here to tell vite not to bundle them in dist;
+// In server.ts they are imported dynamically in runtime (start function)
 export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.0/file-server";
 export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
 
