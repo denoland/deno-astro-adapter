@@ -1,11 +1,9 @@
 import type { AstroIntegration } from "astro";
-import * as fs from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { BuildConfig, InternalOptions, Options } from "./types";
-import { createConfigPlugin } from "./vite-plugin-config";
+import type { BuildConfig, InternalOptions, Options } from "./types.ts";
+import { createConfigPlugin } from "./vite-plugin-config.ts";
 
-const STD_VERSION = `1.0`;
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
 const COMPATIBLE_NODE_MODULES = [
   "assert",
@@ -60,20 +58,14 @@ const COMPATIBLE_NODE_MODULES = [
   "zlib",
 ];
 
-// We shim deno-specific imports so we can run the code in Node
-// to prerender pages. In the final Deno build, this import is
-// replaced with the Deno-specific contents listed below.
-const DENO_SHIM_PATH = `@deno/astro-adapter/__deno_imports.ts`;
-const DENO_IMPORTS =
-  `import { serveFile } from "jsr:@std/http@${STD_VERSION}/file-server";
-import { fromFileUrl } from "jsr:@std/path@${STD_VERSION}";`;
-const DENO_SHIM_BASE = `import { serveFile, fromFileUrl } from`;
-const DENO_IMPORTS_SHIM = `${DENO_SHIM_BASE} "${DENO_SHIM_PATH}";`;
-const DENO_IMPORTS_SHIM_LEGACY = `${DENO_SHIM_BASE} '${DENO_SHIM_PATH}';`;
+// These are used here to tell vite not to bundle them in dist;
+// In server.ts they are imported dynamically in runtime (start function)
+export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.0/file-server";
+export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
 
 export default function createIntegration(args?: Options): AstroIntegration {
   let _buildConfig: BuildConfig;
-  let internalOptions: InternalOptions = { ...args, relativeClientPath: "" };
+  const internalOptions: InternalOptions = { ...args, relativeClientPath: "" };
   return {
     name: "@deno/astro-adapter",
     hooks: {
@@ -135,34 +127,17 @@ export default function createIntegration(args?: Options): AstroIntegration {
           }
 
           if (Array.isArray(vite.build.rollupOptions.external)) {
-            vite.build.rollupOptions.external.push(DENO_SHIM_PATH);
+            vite.build.rollupOptions.external.push(
+              JSR_STD_HTTP_FILE_SERVER,
+              JSR_STD_PATH,
+            );
           } else if (typeof vite.build.rollupOptions.external !== "function") {
             vite.build.rollupOptions.external = [
               vite.build.rollupOptions.external,
-              DENO_SHIM_PATH,
+              JSR_STD_HTTP_FILE_SERVER,
+              JSR_STD_PATH,
             ];
           }
-        }
-      },
-      "astro:build:done": async () => {
-        // Replace `import { serveFile, fromFileUrl } from '@deno/astro-adapter/__deno_imports.ts';` in one of the chunks/ files with the actual imports.
-        const chunksDirUrl = new URL("./chunks/", _buildConfig.server);
-        for (const file of fs.readdirSync(chunksDirUrl)) {
-          if (!file.endsWith(".mjs")) continue;
-          const pth = fileURLToPath(new URL(file, chunksDirUrl));
-          const contents = fs.readFileSync(pth, "utf-8");
-          if (
-            !contents.includes(DENO_IMPORTS_SHIM_LEGACY) &&
-            !contents.includes(DENO_IMPORTS_SHIM)
-          ) {
-            continue;
-          }
-          fs.writeFileSync(
-            pth,
-            contents
-              .replace(DENO_IMPORTS_SHIM_LEGACY, DENO_IMPORTS)
-              .replace(DENO_IMPORTS_SHIM, DENO_IMPORTS),
-          );
         }
       },
     },

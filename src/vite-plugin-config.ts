@@ -1,5 +1,5 @@
 import type { AstroConfig } from "astro";
-import type { InternalOptions } from "./types.js";
+import type { InternalOptions } from "./types.ts";
 
 const VIRTUAL_CONFIG_ID = "virtual:@deno/astro-adapter:config";
 const RESOLVED_VIRTUAL_CONFIG_ID = "\0" + VIRTUAL_CONFIG_ID;
