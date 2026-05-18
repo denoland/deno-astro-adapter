@@ -39,7 +39,7 @@ export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
 // Literal-string `await import("jsr:...")` keeps the specifiers in the static
 // module graph (so Deno Deploy's analyzer can pre-cache them under
 // --cached-only) while deferring execution until the loader is awaited.
-const STATIC_SERVER_ENABLED_SRC = /* js */`let _cached;
+const STATIC_SERVER_ENABLED_SRC = /* js */ `let _cached;
 export async function loadStaticServer() {
   if (!_cached) {
     const [http, path] = await Promise.all([
@@ -52,7 +52,8 @@ export async function loadStaticServer() {
 }
 `;
 
-const STATIC_SERVER_DISABLED_SRC = /* js */`export async function loadStaticServer() {
+const STATIC_SERVER_DISABLED_SRC =
+  /* js */ `export async function loadStaticServer() {
   throw new Error(
     "@deno/astro-adapter: static-file serving is unavailable when start:false. " +
     "Handle static files in your own server before calling handle().",
