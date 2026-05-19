@@ -1,5 +1,9 @@
 import { assert } from "@std/assert";
 import { defaultTestPermissions, runBuild } from "./helpers.ts";
+import {
+  JSR_STD_HTTP_FILE_SERVER,
+  JSR_STD_PATH,
+} from "../src/vite-plugin-config.ts";
 
 const dir = new URL("./", import.meta.url);
 
@@ -32,11 +36,11 @@ Deno.test({
       await runBuild("./fixtures/basics/");
       const bundle = await readServerBundle("./fixtures/basics/");
       assert(
-        bundle.includes("jsr:@std/http@^1.1.0/file-server"),
+        bundle.includes(JSR_STD_HTTP_FILE_SERVER),
         "expected jsr:@std/http file-server specifier in bundle",
       );
       assert(
-        bundle.includes("jsr:@std/path@^1.1.4"),
+        bundle.includes(JSR_STD_PATH),
         "expected jsr:@std/path specifier in bundle",
       );
     });
@@ -45,11 +49,11 @@ Deno.test({
       await runBuild("./fixtures/start-false/");
       const bundle = await readServerBundle("./fixtures/start-false/");
       assert(
-        !bundle.includes("jsr:@std/http"),
+        !bundle.includes(JSR_STD_HTTP_FILE_SERVER.split("@^")[0]), // remove version for check
         "expected no jsr:@std/http reference in start:false bundle",
       );
       assert(
-        !bundle.includes("jsr:@std/path"),
+        !bundle.includes(JSR_STD_PATH.split("@^")[0]), // remove version for check
         "expected no jsr:@std/path reference in start:false bundle",
       );
       // sanity: stub did get emitted (proves the virtual is wired up,

@@ -33,12 +33,13 @@ export function createConfigPlugin(config: InternalOptions): VitePlugin {
 const VIRTUAL_STATIC_SERVER_ID = "virtual:@deno/astro-adapter:static-server";
 const RESOLVED_VIRTUAL_STATIC_SERVER_ID = "\0" + VIRTUAL_STATIC_SERVER_ID;
 
+// Exported to use in config so vite treats these modules as external
 export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.0/file-server";
 export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
 
 // Literal-string `await import("jsr:...")` keeps the specifiers in the static
-// module graph (so Deno Deploy's analyzer can pre-cache them under
-// --cached-only) while deferring execution until the loader is awaited.
+// module graph (so Deno analyzer can pre-cache them under --cached-only)
+// while deferring execution until the loader is awaited.
 const STATIC_SERVER_ENABLED_SRC = /* js */ `let _cached;
 export async function loadStaticServer() {
   if (!_cached) {
@@ -60,7 +61,9 @@ const STATIC_SERVER_DISABLED_SRC =
   );
 }
 `;
-
+/**
+ * Resolves virtual module to lazy-load JSR imports only when start !== false
+ */
 export function createStaticServerPlugin(config: InternalOptions): VitePlugin {
   return {
     name: VIRTUAL_STATIC_SERVER_ID,
