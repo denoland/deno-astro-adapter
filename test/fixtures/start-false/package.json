@@ -1,9 +1,0 @@
-{
-  "name": "@test/deno-astro-start-false",
-  "version": "0.0.0",
-  "private": true,
-  "dependencies": {
-    "astro": "^6",
-    "@deno/astro-adapter": "workspace:*"
-  }
-}
