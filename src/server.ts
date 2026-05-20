@@ -5,7 +5,6 @@ import { serveFile } from "jsr:@std/http@^1.1.0/file-server";
 import { fromFileUrl } from "jsr:@std/path@^1.1.4";
 import * as options from "virtual:@deno/astro-adapter:config";
 
-
 const app = createApp();
 
 let _server: Deno.HttpServer | undefined = undefined;
