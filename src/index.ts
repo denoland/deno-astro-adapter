@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import type { BuildConfig, InternalOptions, Options } from "./types.ts";
 import {
   createConfigPlugin,
-  createStaticServerPlugin,
   JSR_STD_HTTP_FILE_SERVER,
   JSR_STD_PATH,
 } from "./vite-plugin-config.ts";
@@ -74,7 +73,6 @@ export default function createIntegration(args?: Options): AstroIntegration {
           vite: {
             plugins: [
               createConfigPlugin(internalOptions),
-              createStaticServerPlugin(internalOptions),
             ],
           },
         });

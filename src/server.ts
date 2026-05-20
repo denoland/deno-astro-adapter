@@ -1,8 +1,10 @@
 import { createApp } from "astro/app/entrypoint";
 import { setGetEnv } from "astro/env/setup";
-setGetEnv((key) => Deno.env.get(key));
+import { serveFile } from "jsr:@std/http@^1.1.0/file-server";
+import { fromFileUrl } from "jsr:@std/path@^1.1.4";
 import * as options from "virtual:@deno/astro-adapter:config";
-import { loadStaticServer } from "virtual:@deno/astro-adapter:static-server";
+
+setGetEnv((key) => Deno.env.get(key));
 
 const app = createApp();
 
@@ -57,7 +59,6 @@ async function start() {
 
     // If the request path wasn't found in astro,
     // try to fetch a static file instead
-    const { serveFile, fromFileUrl } = await loadStaticServer();
     const url = new URL(request.url);
     const localPath = new URL("./" + app.removeBase(url.pathname), clientRoot);
 
