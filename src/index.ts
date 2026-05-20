@@ -2,11 +2,7 @@ import type { AstroIntegration } from "astro";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { BuildConfig, InternalOptions, Options } from "./types.ts";
-import {
-  createConfigPlugin,
-  JSR_STD_HTTP_FILE_SERVER,
-  JSR_STD_PATH,
-} from "./vite-plugin-config.ts";
+import { createConfigPlugin } from "./vite-plugin-config.ts";
 
 // REF: https://github.com/denoland/deno/tree/main/ext/node/polyfills
 const COMPATIBLE_NODE_MODULES = [
@@ -62,6 +58,10 @@ const COMPATIBLE_NODE_MODULES = [
   "zlib",
 ];
 
+// These are used here to tell vite not to bundle them in dist;
+// In server.ts they are imported dynamically in runtime (start function)
+export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.0/file-server";
+export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
 export default function createIntegration(args?: Options): AstroIntegration {
   let _buildConfig: BuildConfig;
   const internalOptions: InternalOptions = { ...args, relativeClientPath: "" };
@@ -71,9 +71,7 @@ export default function createIntegration(args?: Options): AstroIntegration {
       "astro:config:setup": ({ updateConfig }) => {
         updateConfig({
           vite: {
-            plugins: [
-              createConfigPlugin(internalOptions),
-            ],
+            plugins: [createConfigPlugin(internalOptions)],
           },
         });
       },
