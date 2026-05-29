@@ -1,8 +1,9 @@
 import { createApp } from "astro/app/entrypoint";
 import { setGetEnv } from "astro/env/setup";
 setGetEnv((key) => Deno.env.get(key));
+import { serveFile } from "jsr:@std/http@^1.1.0/file-server";
+import { fromFileUrl } from "jsr:@std/path@^1.1.4";
 import * as options from "virtual:@deno/astro-adapter:config";
-import { JSR_STD_HTTP_FILE_SERVER, JSR_STD_PATH } from "./index.ts";
 
 const app = createApp();
 
@@ -24,9 +25,6 @@ function removeTrailingForwardSlash(path: string) {
 }
 
 async function start() {
-  const { serveFile } = await import(JSR_STD_HTTP_FILE_SERVER);
-  const { fromFileUrl } = await import(JSR_STD_PATH);
-
   // undefined = not yet loaded, null = not installed
   let trace: import("@opentelemetry/api").TraceAPI | null | undefined;
 

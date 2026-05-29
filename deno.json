@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "test": "deno test --allow-run --allow-env --allow-read --allow-net ./test/"
+    "test": "deno test --allow-run --allow-env --allow-read --allow-write --allow-net ./test/"
   },
   "workspace": ["test/fixtures/*"],
   "imports": {
