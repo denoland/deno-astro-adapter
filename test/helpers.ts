@@ -28,6 +28,7 @@ export async function runBuild(fixturePath: string) {
       "--allow-net",
       "--allow-ffi",
       "--allow-sys",
+      "--allow-import",
       "npm:astro",
       "build",
       "--silent",

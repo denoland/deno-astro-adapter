@@ -60,8 +60,8 @@ const COMPATIBLE_NODE_MODULES = [
 
 // These are used here to tell vite not to bundle them in dist;
 // In server.ts they are imported dynamically in runtime (start function)
-export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.0/file-server";
-export const JSR_STD_PATH = "jsr:@std/path@^1.1.4";
+export const JSR_STD_HTTP_FILE_SERVER = "jsr:@std/http@^1.1.1/file-server";
+export const JSR_STD_PATH = "jsr:@std/path@^1.1.5";
 
 export default function createIntegration(args?: Options): AstroIntegration {
   let _buildConfig: BuildConfig;
@@ -78,10 +78,7 @@ export default function createIntegration(args?: Options): AstroIntegration {
       },
       "astro:config:done": ({ setAdapter, config }) => {
         const clientPath = join(fileURLToPath(config.build.client));
-        const serverPath = join(
-          fileURLToPath(config.build.server),
-          config.build.serverEntry,
-        );
+        const serverPath = join(fileURLToPath(config.build.server));
         internalOptions.relativeClientPath = relative(serverPath, clientPath) +
           "/";
         setAdapter({
@@ -102,9 +99,9 @@ export default function createIntegration(args?: Options): AstroIntegration {
           vite.resolve = vite.resolve ?? {};
           vite.resolve.alias = vite.resolve.alias ?? {};
           vite.build = vite.build ?? {};
-          vite.build.rollupOptions = vite.build.rollupOptions ?? {};
-          vite.build.rollupOptions.external =
-            vite.build.rollupOptions.external ?? [];
+          vite.build.rolldownOptions = vite.build.rolldownOptions ?? {};
+          vite.build.rolldownOptions.external =
+            vite.build.rolldownOptions.external ?? [];
 
           const aliases = [
             {
@@ -126,14 +123,16 @@ export default function createIntegration(args?: Options): AstroIntegration {
             }
           }
 
-          if (Array.isArray(vite.build.rollupOptions.external)) {
-            vite.build.rollupOptions.external.push(
+          if (Array.isArray(vite.build.rolldownOptions.external)) {
+            vite.build.rolldownOptions.external.push(
               JSR_STD_HTTP_FILE_SERVER,
               JSR_STD_PATH,
             );
-          } else if (typeof vite.build.rollupOptions.external !== "function") {
-            vite.build.rollupOptions.external = [
-              vite.build.rollupOptions.external,
+          } else if (
+            typeof vite.build.rolldownOptions.external !== "function"
+          ) {
+            vite.build.rolldownOptions.external = [
+              vite.build.rolldownOptions.external,
               JSR_STD_HTTP_FILE_SERVER,
               JSR_STD_PATH,
             ];
