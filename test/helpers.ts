@@ -24,7 +24,8 @@ export async function runBuild(fixturePath: string) {
       // Astro's build pulls in `is-wsl`, which calls
       // `fs.existsSync("/proc/sys/fs/binfmt_misc/WSLInterop")`. Under Deno's
       // node compat that probe needs full access, so the granular flags aren't
-      // enough — run the trusted build tool with --allow-all.
+      // enough — run the trusted build tool with --allow-all. This also covers
+      // the --allow-import that Astro 7's build requires.
       "--allow-all",
       "npm:astro",
       "build",
