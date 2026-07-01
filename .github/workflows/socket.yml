@@ -1,0 +1,29 @@
+name: Socket audit
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  socket:
+    name: Audit deno.lock against Socket
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Deno 2.x
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Audit new dependencies
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          SOCKET_SECURITY_API_KEY: ${{ secrets.SOCKET_SECURITY_API_KEY }}
+        run: deno run -A scripts/socket-audit.ts
