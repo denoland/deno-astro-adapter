@@ -21,6 +21,7 @@ export async function runBuild(fixturePath: string) {
   const command = new Deno.Command(Deno.execPath(), {
     args: [
       "run",
+<<<<<<< feat/astro7
       "--allow-env",
       "--allow-read",
       "--allow-write",
@@ -29,6 +30,13 @@ export async function runBuild(fixturePath: string) {
       "--allow-ffi",
       "--allow-sys",
       "--allow-import",
+=======
+      // Astro's build pulls in `is-wsl`, which calls
+      // `fs.existsSync("/proc/sys/fs/binfmt_misc/WSLInterop")`. Under Deno's
+      // node compat that probe needs full access, so the granular flags aren't
+      // enough — run the trusted build tool with --allow-all.
+      "--allow-all",
+>>>>>>> main
       "npm:astro",
       "build",
       "--silent",
