@@ -13,6 +13,8 @@
 //
 // This reports Socket alerts for the audited packages but does not fail the
 // job on them (informational). Flip GATE below to make risky alerts blocking.
+// If the API is out of quota / rate-limited, the audit soft-skips (exit 0)
+// rather than red-failing the PR on an infrastructure condition.
 //
 // Environment:
 //   BASE_SHA                  git sha of the PR base; enables diff mode
@@ -48,6 +50,13 @@ async function gitShow(ref: string, path: string): Promise<string | null> {
     stderr: "null",
   }).output();
   return code === 0 ? new TextDecoder().decode(stdout) : null;
+}
+
+/** A non-2xx Socket API response, carrying the HTTP status for the caller. */
+class SocketApiError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
+  }
 }
 
 /** POST a batch of PURLs to Socket, retrying on 429/5xx with backoff. */
@@ -88,8 +97,17 @@ async function batchScore(
       await new Promise((r) => setTimeout(r, wait));
       continue;
     }
-    throw new Error(`Socket API ${res.status} ${res.statusText}: ${detail}`);
+    throw new SocketApiError(
+      res.status,
+      `Socket API ${res.status} ${res.statusText}: ${detail}`,
+    );
   }
+}
+
+/** Append a message to the GitHub Actions job summary, if running in CI. */
+async function writeSummary(text: string): Promise<void> {
+  const path = Deno.env.get("GITHUB_STEP_SUMMARY");
+  if (path) await Deno.writeTextFile(path, text + "\n", { append: true });
 }
 
 const apiKey = Deno.env.get("SOCKET_SECURITY_API_KEY");
@@ -126,8 +144,21 @@ console.log(`Auditing ${targets.length} npm package(s) against Socket...\n`);
 const purls = targets.map((pkg) => `pkg:npm/${pkg}`);
 
 const results: Record<string, unknown>[] = [];
-for (let i = 0; i < purls.length; i += BATCH) {
-  results.push(...await batchScore(apiKey, purls.slice(i, i + BATCH)));
+try {
+  for (let i = 0; i < purls.length; i += BATCH) {
+    results.push(...await batchScore(apiKey, purls.slice(i, i + BATCH)));
+  }
+} catch (err) {
+  // Quota exhaustion / persistent rate limiting is an infrastructure condition,
+  // not a security finding — warn and soft-skip instead of red-failing the PR.
+  if (err instanceof SocketApiError && err.status === 429) {
+    const msg =
+      `⚠️ Socket audit skipped — API quota or rate limit reached.\n\n${err.message}`;
+    console.warn(msg);
+    await writeSummary(`## Socket dependency audit\n\n${msg}`);
+    Deno.exit(0);
+  }
+  throw err;
 }
 
 interface Alert {
@@ -171,13 +202,7 @@ const report = [
 if (flagged.length) report.push("### Blocking alerts", "", ...flagged);
 
 console.log(report.join("\n"));
-
-const summaryPath = Deno.env.get("GITHUB_STEP_SUMMARY");
-if (summaryPath) {
-  await Deno.writeTextFile(summaryPath, report.join("\n") + "\n", {
-    append: true,
-  });
-}
+await writeSummary(report.join("\n"));
 
 if (GATE && flagged.length) {
   console.error(
