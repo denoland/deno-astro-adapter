@@ -1,21 +1,37 @@
 name: Socket audit
 
+# Uses pull_request_target (not pull_request) so the job has access to the
+# SOCKET_SECURITY_API_KEY secret on PRs from forks — GitHub withholds secrets
+# from fork-triggered `pull_request` runs. pull_request_target runs with base
+# repo permissions, so to stay safe this job NEVER checks out or executes the
+# PR's code: it checks out the trusted base repo (our audit script) and pulls
+# in only the PR's deno.lock as data to audit.
+
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
 
 permissions:
   contents: read
+
+concurrency:
+  group: socket-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   socket:
     name: Audit deno.lock against Socket
     runs-on: ubuntu-latest
     steps:
-      - name: Clone repository
+      - name: Clone base repository (trusted code)
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Load the PR's deno.lock (data only, no PR code)
+        run: |
+          git fetch origin "pull/${{ github.event.pull_request.number }}/head"
+          git checkout FETCH_HEAD -- deno.lock
 
       - name: Setup Deno 2.x
         uses: denoland/setup-deno@v2
